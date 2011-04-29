@@ -149,6 +149,11 @@ class Tropo extends BaseClass {
 	 */
 	public function conference($conference, Array $params=NULL) {
 		if(!is_object($conference)) {
+		  // fix a bug in the conf ID, but still allow backward compat for people
+		  // who were using it the broken way
+		  if (!array_key_exists('id', $params)) {
+		    $id = $conference;
+		  }
 			$p = array('name', 'id', 'mute', 'on', 'playTones', 'required', 'terminator', 'allowSignals');
 	  	foreach ($p as $option) {
 	      $$option = null;
@@ -223,7 +228,14 @@ class Tropo extends BaseClass {
 	public function record($record) {
 		if(!is_object($record) && is_array($record)) {
 		  $params = $record;
-			$choices = isset($params["choices"]) ? new Choices($params["choices"]) : null;
+		  if (is_object($params["choices"])) {
+		    $choices = $params["choices"];
+		  } else {
+		    $choices = null;
+		    if (isset($params["choices"])) {
+    			$choices = new Choices($params["choices"], $params["mode"], $params["terminator"]);		    		      
+		    }
+		  }
 			$say = new Say($params["say"], $params["as"], null, $params["voice"]);
 			if (is_array($params['transcription'])) {
 			  $p = array('url', 'id', 'emailFormat');
