@@ -662,8 +662,18 @@ abstract class BaseClass {
 	 * @return string
 	 */
 	public function unescapeJSON($json) {
+	  $json = preg_replace_callback('/\\\\u([0-9a-f]{4})/i', 'BaseClass::replace_unicode_escape_sequence', $json);
 	  return str_replace(array("\\", "\"{", "}\""), array("", "{", "}"), $json);
 	}
+	
+	private function replace_unicode_escape_sequence($match) {
+	  if (function_exists('mb_convert_encoding')) {
+	    return mb_convert_encoding(pack('H*', $match[1]), 'UTF-8');
+	  } else {
+	    return $match[1];
+	  }
+  }
+	
 }
 
 /**
