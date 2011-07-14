@@ -592,7 +592,7 @@ class Tropo extends BaseClass {
 	 *
 	 */
 	public function renderJSON() {
-		header('Content-type: application/json');
+		header('Content-type: application/json; charset=UTF-8');
 		echo $this;
 	}
 
