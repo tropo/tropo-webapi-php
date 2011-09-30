@@ -1,0 +1,3 @@
+[submodule "samples/orchestra"]
+	path = samples/orchestra
+	url = https://github.com/mheadd/tropo-orchestra.git
