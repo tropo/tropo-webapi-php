@@ -1550,6 +1550,7 @@ class Session {
   private $_from;
   private $_headers;
   private $_parameters;
+  private $_userType;
 
   /**
   * Class constructor
@@ -1574,15 +1575,18 @@ class Session {
     $this->_callId = $session->session->callId;
     $this->_timestamp = $session->session->timestamp;
     $this->_initialText = $session->session->initialText;
+    $this->_userType = $session->session->userType;
     $this->_to = isset($session->session->to)
     ? array(
-      "id" => $session->session->to->id,	
+      "id" => $session->session->to->id,
+      "e164Id" => $session->session->to->e164Id,
       "channel" => $session->session->to->channel,
       "name" => $session->session->to->name,
       "network" => $session->session->to->network
         )
       : array(
         "id" => null,
+        "e164Id" => null,
         "channel" => null,
         "name" => null,
         "network" => null
@@ -1590,12 +1594,14 @@ class Session {
         $this->_from = isset($session->session->from->id)
         ? array(
           "id" => $session->session->from->id,
+          "e164Id" => $session->session->from->e164Id,
           "channel" => $session->session->from->channel,
           "name" => $session->session->from->name,
           "network" => $session->session->from->network
             )
           : array(
             "id" => null,
+            "e164Id" => null,
             "channel" => null,
             "name" => null,
             "network" => null
@@ -1609,6 +1615,10 @@ class Session {
 
           public function getId() {
             return $this->_id;
+          }
+
+          public function getE164Id() {
+            return $this->_e164Id;
           }
 
           public function getAccountID() {
@@ -1645,6 +1655,10 @@ class Session {
 
           public function getHeaders() {
             return $this->_headers;
+          }
+
+          public function getUserType() {
+            return $this->_userType;
           }
 
           /**
