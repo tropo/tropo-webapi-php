@@ -206,16 +206,28 @@ class Tropo extends BaseClass {
   * @see https://www.tropo.com/docs/webapi/on.htm
   */
   public function on($on) {
-    if (!is_object($on) && is_array($on))	{
-      $params = $on;
-      if ((array_key_exists('say', $params) && ((array_key_exists('voice', $params) || isset($this->_voice))))){
-        $v = isset($params["voice"]) ? $params["voice"] : $this->_voice;
-        $say = new Say($params["say"], null, null, $v);
-      }else{
-        $say = (array_key_exists('say', $params)) ? new Say($params["say"]) : null;
+    if (!is_object($on))	{
+      if (is_array($on)) {
+        $params = $on;
+        if (!$params["event"]) {
+          throw new Exception("Missing required property: 'event'");
+        }
+        if (!$params["say"]) {
+          throw new Exception("Missing required property: 'say'");
+        }
+        if (!is_object($params["say"])) {
+          throw new Exception("Property 'say' must be a Say object");
+        }
+        $next = (array_key_exists('next', $params)) ? $params["next"] : null;
+        $on = new On($params["event"], $next, $params["say"]);
       }
-      $next = (array_key_exists('next', $params)) ? $params["next"] : null;
-      $on = new On($params["event"], $next, $say);
+    } else {
+      if(!($on->getEvent())) {
+        throw new Exception("Missing required property: 'event'");
+      }
+      if(!($on->getSay())) {
+        throw new Exception("Missing required property: 'say'");
+      }
     }
     $this->on = array(sprintf('%s', $on));
   }
@@ -1131,11 +1143,16 @@ class On extends BaseClass {
   private $_event;
   private $_next;
   private $_say;
-  private $_voice;
   private $_ask;
-  private $_message;
-  private $_wait;
-  private $_order;
+  private $_post;
+
+  public function getEvent() {
+    return $this->_event;
+  }
+
+  public function getSay() {
+    return $this->_say;
+  }
 
   /**
   * Class constructor
@@ -1145,15 +1162,15 @@ class On extends BaseClass {
   * @param Say $say
   * @param string $voice
   */
-  public function __construct($event=NULL, $next=NULL, Say $say=NULL, $voice=Null, $ask=NULL, Message $message=NULL, Wait $wait=NULL, $order=NULL) {
+  public function __construct($event, $next=NULL, Say $say=NULL, Ask $ask=NULL, $post=NULL) {
+    if(!$event) {
+      throw new Exception("Missing required property: 'event'");
+    }
     $this->_event = $event;
     $this->_next = $next;
     $this->_say = isset($say) ? sprintf('%s', $say) : null ;
-    $this->_voice = $voice;
     $this->_ask = isset($ask) ? sprintf('%s', $ask) : null;
-    $this->_message = isset($message) ? sprintf('%s', $message) : null;
-    $this->_wait = isset($wait) ? sprintf('%s', $wait) : null;
-    $this->_order = $order;
+    $this->_post = $post;
   }
 
   /**
@@ -1161,31 +1178,12 @@ class On extends BaseClass {
   *
   */
   public function __toString() {
-    
-    if($this->_event == "connect") {  
-      $this->event =  $this->_event;        
-      switch($this->_order){
-        case 'ask':
-        $this->ask = $this->_ask;
-        break;
-        case  'say':
-        $this->say = $this->_say;
-        break;
-        case 'wait':
-        $this->ask = $this->_ask;  
-        break;
-        case 'message':
-        $this->message = $this->_message;
-        break;
-      }          
-      return $this->unescapeJSON(json_encode(($this)));
-    }else{
-      if(isset($this->_event)) { $this->event = $this->_event; }
-      if(isset($this->_next)) { $this->next = $this->_next; }
-      if(isset($this->_say)) { $this->say = $this->_say; }
-      if(isset($this->_voice)) { $this->voice = $this->_voice; }
-      return $this->unescapeJSON(json_encode($this));
-    }
+    if(isset($this->_event)) { $this->event = $this->_event; }
+    if(isset($this->_next)) { $this->next = $this->_next; }
+    if(isset($this->_say)) { $this->say = $this->_say; }
+    if(isset($this->_ask)) { $this->ask = $this->_ask; }
+    if(isset($this->_post)) { $this->post = $this->_post; }
+    return $this->unescapeJSON(json_encode($this));
   }
 }
 
