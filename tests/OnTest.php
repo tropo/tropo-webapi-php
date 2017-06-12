@@ -8,7 +8,7 @@ class OnTest extends TestCase{
 
 		$tropo = new Tropo();
 		$say = new Say("object continue!", null, null, null, null, null, null, null);
-		$on = new On("continue", "say.php", $say);
+		$on = new On(Event::$continue, "say.php", $say);
 		$tropo->on($on);
 		$this->assertEquals(sprintf($tropo), '{"tropo":[{"on":[{"event":"continue","next":"say.php","say":{"value":"object continue!"}}]}]}');
 	}
@@ -18,7 +18,7 @@ class OnTest extends TestCase{
 		$tropo = new Tropo();
 		$say = new Say("array continue!", null, null, null, null, null, null, null);
 		$on = array(
-			'event' => 'continue',
+			'event' => Event::$continue,
 			'next' => 'say.php',
 			'say' => $say
 			);
@@ -59,7 +59,6 @@ class OnTest extends TestCase{
 	public function testFailsOnWithNoEventParameter3() {
 		$tropo = new Tropo();
 		try {
-			$say = new Say("object continue!", null, null, null, null, null, null, null);
 			$say = new Say("array continue!", null, null, null, null, null, null, null);
 			@ $on = array(
 				'next' => 'say.php',
@@ -104,7 +103,7 @@ class OnTest extends TestCase{
 	public function testFailsOnWithNoSayParameter() {
 		$tropo = new Tropo();
 		try {
-			$on = new On("continue", "say.php");
+			$on = new On(Event::$continue, "say.php");
 			$tropo->on($on);
 		} catch (Exception $e) {
 			$this->assertEquals($e->getMessage(), "Missing required property: 'say'");
@@ -115,7 +114,7 @@ class OnTest extends TestCase{
 		$tropo = new Tropo();
 		try {
 			$on = array(
-				'event' => 'continue',
+				'event' => Event::$continue,
 				'next' => 'say.php'
 				);
 			$tropo->on($on);
@@ -128,7 +127,7 @@ class OnTest extends TestCase{
 		$tropo = new Tropo();
 		try {
 			$on = array(
-				'event' => 'continue',
+				'event' => Event::$continue,
 				'next' => 'say.php',
 				'say' => null
 				);

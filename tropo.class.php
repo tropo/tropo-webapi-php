@@ -93,30 +93,12 @@ class Tropo extends BaseClass {
   * @param array $params
   * @see https://www.tropo.com/docs/webapi/ask.htm
   */
-  public function ask($ask, Array $params=NULL) {
-    if(!is_object($ask)) {
-      $p = array('as','event','voice','attempts', 'bargein', 'minConfidence', 'name', 'required', 'timeout', 'allowSignals', 'recognizer', 'interdigitTimeout', 'sensitivity', 'speechCompleteTimeout', 'speechIncompleteTimeout');
-      foreach ($p as $option) {
-        $$option = null;
-        if (is_array($params) && array_key_exists($option, $params)) {
-          $$option = $params[$option];
-        }
-      }
-      if (is_array($event)) {
-        // If an event was passed in, add the events to the Ask
-        foreach ($event as $e => $val){
-          $say[] = new Say($val, $as, $e, $voice);
-        }
-      }
-      $say[] = new Say($ask, $as, null, $voice);
-      $params["mode"] = isset($params["mode"]) ? $params["mode"] : null;
-      $params["dtmf"] = isset($params["dtmf"]) ? $params["dtmf"] : null;
-      $params["terminator"] = isset($params["terminator"]) ? $params["terminator"] : null;
-      if (!isset($voice) && isset($this->_voice)) {
-        $voice = $this->_voice;
-      }
-      $choices = isset($params["choices"]) ? new Choices($params["choices"], $params["mode"], $params["terminator"]) : null;
-      $ask = new Ask($attempts, $bargein, $choices, $minConfidence, $name, $required, $say, $timeout, $voice, $allowSignals, $recognizer, $interdigitTimeout, $sensitivity, $speechCompleteTimeout, $speechIncompleteTimeout);
+  public function ask(Ask $ask) {
+    if(!($ask->getChoices())) {
+      throw new Exception("Missing required property: 'choices'");
+    }
+    if(!($ask->getSay())) {
+      throw new Exception("Missing required property: 'say'");
     }
     $this->ask = sprintf('%s', $ask);
   }
@@ -788,6 +770,17 @@ class Ask extends BaseClass {
   private $_sensitivity;
   private $_speechCompleteTimeout;
   private $_speechIncompleteTimeout;
+  private $_promptLogSecurity;
+  private $_asrLogSecurity;
+  private $_maskTemplate;
+
+  public function getChoices() {
+    return $this->_choices;
+  }
+
+  public function getSay() {
+    return $this->_say;
+  }
 
   /**
   * Class constructor
@@ -807,7 +800,13 @@ class Ask extends BaseClass {
   * @param float $speechCompleteTimeout
   * @param float $speechIncompleteTimeout
   */
-  public function __construct($attempts=NULL, $bargein=NULL, Choices $choices=NULL, $minConfidence=NULL, $name=NULL, $required=NULL, $say=NULL, $timeout=NULL, $voice=NULL, $allowSignals=NULL, $recognizer=NULL, $interdigitTimeout=NULL, $sensitivity=NULL, $speechCompleteTimeout=NULL, $speechIncompleteTimeout=NULL) {
+  public function __construct($attempts=NULL, $bargein=NULL, Choices $choices, $minConfidence=NULL, $name=NULL, $required=NULL, $say, $timeout=NULL, $voice=NULL, $allowSignals=NULL, $recognizer=NULL, $interdigitTimeout=NULL, $sensitivity=NULL, $speechCompleteTimeout=NULL, $speechIncompleteTimeout=NULL, $promptLogSecurity=NULL, $asrLogSecurity=NULL, $maskTemplate=NULL) {
+    if(!$choices) {
+      throw new Exception("Missing required property: 'choices'");
+    }
+    if(!$say) {
+      throw new Exception("Missing required property: 'say'");
+    }
     $this->_attempts = $attempts;
     $this->_bargein = $bargein;
     $this->_choices = isset($choices) ? sprintf('%s', $choices) : null ;
@@ -823,6 +822,9 @@ class Ask extends BaseClass {
     $this->_sensitivity = $sensitivity;
     $this->_speechCompleteTimeout = $speechCompleteTimeout;
     $this->_speechIncompleteTimeout = $speechIncompleteTimeout;
+    $this->_promptLogSecurity = $promptLogSecurity;
+    $this->_asrLogSecurity = $asrLogSecurity;
+    $this->_maskTemplate = $maskTemplate;
   }
 
   /**
@@ -850,6 +852,9 @@ class Ask extends BaseClass {
     if(isset($this->_sensitivity)) { $this->sensitivity = $this->_sensitivity; }
     if(isset($this->_speechCompleteTimeout)) { $this->speechCompleteTimeout = $this->_speechCompleteTimeout; }
     if(isset($this->_speechIncompleteTimeout)) { $this->speechIncompleteTimeout = $this->_speechIncompleteTimeout; }
+    if(isset($this->_promptLogSecurity)) { $this->promptLogSecurity = $this->_promptLogSecurity; }
+    if(isset($this->_asrLogSecurity)) { $this->asrLogSecurity = $this->_asrLogSecurity; }
+    if(isset($this->_maskTemplate)) { $this->maskTemplate = $this->_maskTemplate; }
     return $this->unescapeJSON(json_encode($this));
   }
 
@@ -1617,10 +1622,6 @@ class Session {
             return $this->_id;
           }
 
-          public function getE164Id() {
-            return $this->_e164Id;
-          }
-
           public function getAccountID() {
             return $this->_accountId;
           }
@@ -2171,16 +2172,79 @@ class Voice {
 *
 */
 class Recognizer {
-  public static $German = 'de-de';
-  public static $British_English = 'en-gb';
-  public static $US_English = 'en-us';
-  public static $Castilian_Spanish = 'es-es';
-  public static $Mexican_Spanish = 'es-mx';
-  public static $French_Canadian = 'fr-ca';
-  public static $French = 'fr-fr';
-  public static $Italian = 'it-it';
-  public static $Polish = 'pl-pl';
+  public static $Afrikaans = 'af-za';
+  public static $Arabic = 'ar-ww';
+  public static $Jordanian_Arabic = 'ar-jo';
+  public static $Assamese = 'as-in';
+  public static $Basque = 'eu-es';
+  public static $Bengali = 'bn-bd';
+  public static $Indian_Bengali = 'bn-bi';
+  public static $Bhojpuri = 'bh-in';
+  public static $Bulgarian = 'bg-bg';
+  public static $Cantonese = 'cn-hk';
+  public static $Catalan = 'ca-es';
+  public static $Czech = 'cs-cz';
+  public static $Danish = 'da-dk';
   public static $Dutch = 'nl-nl';
+  public static $Belgian_Dutch = 'nl-be';
+  public static $Australian_English = 'en-au';
+  public static $Indian_English = 'en-in';
+  public static $Singaporean_English = 'en-sg';
+  public static $South_African_English = 'en-za';
+  public static $UK_English = 'en-gb';
+  public static $US_English = 'en-us';
+  public static $Finnish = 'fi-fi';
+  public static $French = 'fr-fr';
+  public static $Belgian_French = 'fr-be';
+  public static $Canadian_French = 'fr-ca';
+  public static $Galician = 'gl-es';
+  public static $German = 'de-de';
+  public static $Austrian_German = 'de-at';
+  public static $Swiss_German = 'de-ch';
+  public static $Greek = 'el-gr';
+  public static $Gujarati = 'gu-in';
+  public static $Hebrew = 'he-il';
+  public static $Hindi = 'hi-in';
+  public static $Hungarian = 'hu-hu';
+  public static $Icelandic = 'is-is';
+  public static $Indonesian = 'id-id';
+  public static $Italian = 'it-it';
+  public static $Japanese = 'ja-jp';
+  public static $Kannada = 'kn-in';
+  public static $Korean = 'ko-kr';
+  public static $Malay = 'ms-my';
+  public static $Malayalam = 'ml-in';
+  public static $Mandarin = 'zh-cn';
+  public static $Taiwanese_Mandarin = 'zh-tw';
+  public static $Marathi = 'mr-in';
+  public static $Nepali = 'ne-np';
+  public static $Norwegian = 'no-no';
+  public static $Oriya = 'or-in';
+  public static $Polish = 'pl-pl';
+  public static $Portuguese = 'pt-pt';
+  public static $Brazilian_Portuguese = 'pt-br';
+  public static $Punjabi = 'pa-in';
+  public static $Romanian = 'ro-ro';
+  public static $Russian = 'ru-ru';
+  public static $Serbian = 'sr-rs';
+  public static $Slovak = 'sk-sk';
+  public static $Slovenian = 'sl-si';
+  public static $Spanish = 'es-es';
+  public static $Argentinian_Spanish = 'es-ar';
+  public static $Colombian_Spanish = 'es-co';
+  public static $Mexican_Spanish = 'es-us';
+  public static $US_Spanish = 'es-us';
+  public static $Swedish = 'sv-se';
+  public static $Tamil = 'ta-in';
+  public static $Telugu = 'te-in';
+  public static $Thai = 'th-th';
+  public static $Turkish = 'tr-tr';
+  public static $Ukrainian = 'uk-ua';
+  public static $Indian_Urdu = 'ur-in';
+  public static $Pakistani_Urdu = 'ur-pk';
+  public static $Valencian = 'va-es';
+  public static $Vietnamese = 'vi-vn';
+  public static $Welsh = 'cy-gb';
 }
 
 /**
