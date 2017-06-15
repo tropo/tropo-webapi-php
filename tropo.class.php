@@ -93,12 +93,68 @@ class Tropo extends BaseClass {
   * @param array $params
   * @see https://www.tropo.com/docs/webapi/ask.htm
   */
-  public function ask(Ask $ask) {
-    if(!($ask->getChoices())) {
-      throw new Exception("Missing required property: 'choices'");
-    }
-    if(!($ask->getSay())) {
-      throw new Exception("Missing required property: 'say'");
+  public function ask($ask, Array $params=NULL) {
+    if ($ask instanceof Ask) {
+
+      if(null === $ask->getChoices()) {
+        throw new Exception("Missing required property: 'choices'");
+      }
+      if(null === $ask->getSay()) {
+        throw new Exception("Missing required property: 'say'");
+      }
+
+    } elseif (is_string($ask) && ($ask !== '')) {
+
+      if (isset($params) && is_array($params)) {
+
+        if (array_key_exists('choices', $params)) {
+
+          if ($params["choices"] instanceof Choices) {
+
+            $choices = $params["choices"];
+
+          } elseif (is_string($params['choices']) && ($params['choices'] !== '')) {
+
+            $params["mode"] = isset($params["mode"]) ? $params["mode"] : null;
+            $params["terminator"] = isset($params["terminator"]) ? $params["terminator"] : null;
+            $choices = new Choices($params["choices"], $params["mode"], $params["terminator"]);
+
+          } else {
+
+            throw new Exception("'choices' must be is a string or an instance of Choices.");
+
+          }
+        } else {
+
+          throw new Exception("Missing required property: 'choices'");
+
+        }
+
+        $p = array('event','voice','attempts', 'bargein', 'minConfidence', 'name', 'required', 'timeout', 'allowSignals', 'recognizer', 'interdigitTimeout', 'sensitivity', 'speechCompleteTimeout', 'speechIncompleteTimeout', 'promptLogSecurity', 'asrLogSecurity', 'maskTemplate');
+        foreach ($p as $option) {
+          $$option = null;
+          if (array_key_exists($option, $params)) {
+            $$option = $params[$option];
+          }
+        }
+        if (is_array($event)) {
+          foreach ($event as $e => $val){
+            $say[] = new Say($val, null, $e);
+          }
+        }
+        $say[] = new Say($ask);
+        $ask = new Ask($attempts, $bargein, $choices, $minConfidence, $name, $required, $say, $timeout, $voice, $allowSignals, $recognizer, $interdigitTimeout, $sensitivity, $speechCompleteTimeout, $speechIncompleteTimeout, $promptLogSecurity, $asrLogSecurity, $maskTemplate);
+
+      } else {
+
+        throw new Exception("When Argument 1 passed to Tropo::ask() is a string, argument 2 passed to Tropo::ask() must be of the type array.");
+
+      }
+
+    } else {
+
+      throw new Exception("Argument 1 passed to Tropo::ask() must be a string or an instance of Ask.");
+
     }
     $this->ask = sprintf('%s', $ask);
   }
@@ -165,18 +221,81 @@ class Tropo extends BaseClass {
   * @see https://www.tropo.com/docs/webapi/message.htm
   */
   public function message($message, Array $params=null) {
-    if(!is_object($message)) {
-      $say = new Say($message);
-      $to = $params["to"];
-      $p = array('channel', 'network', 'from', 'voice', 'timeout', 'answerOnMedia','headers');
-      foreach ($p as $option) {
-        $$option = null;
-        if (is_array($params) && array_key_exists($option, $params)) {
-          $$option = $params[$option];
-        }
+
+    if ($message instanceof Message) {
+      if(null === $message->getSay()) {
+        throw new Exception("Missing required property: 'say'");
       }
-      $message = new Message($say, $to, $channel, $network, $from, $voice, $timeout, $answerOnMedia, $headers);
+      if(null === $message->getTo()) {
+        throw new Exception("Missing required property: 'to'");
+      }
+      if(null === $message->getName()) {
+        throw new Exception("Missing required property: 'name'");
+      }
+    } elseif (is_string($message) && ($message!=='')) {
+
+      if (isset($params) && is_array($params)) {
+        if (array_key_exists('to', $params)) {
+          if (is_array($params["to"])) {
+            foreach ($params["to"] as $value) {
+              if (is_string($value) && ($value !== '')) {
+                $to[] = $value;
+              } else {
+                throw new Exception("'to' must be is a string or an array of string.");
+              }
+            }
+          } elseif (is_string($params["to"]) && ($params["to"]!=='')) {
+            $to = $params["to"];
+          } else {
+            throw new Exception("'to' must be is a string or an array of string.");
+          }
+        } else {
+          throw new Exception("Missing required property: 'to'");
+        }
+
+        if (array_key_exists('name', $params)) {
+          if (is_string($params["name"]) && ($params["name"] !=='')) {
+            $name = $params["name"];
+          } else {
+            throw new Exception("'name' must be is a string.");
+          }
+        } else {
+          throw new Exception("Missing required property: 'name'");
+        }
+
+        if (array_key_exists('say', $params)) {
+          if (is_array($params["say"])) {
+            $say[] = new Say($message);
+            foreach ($params["say"] as $value) {
+              if (is_string($value) && ($value !== '')) {
+                $say[] = new Say($value);
+              }
+            }
+          } elseif (is_string($params["say"]) && ($params["say"] !== '')) {
+            $say[] = new Say($message);
+            $say[] = new Say($params["say"]);
+          } else {
+            $say = new Say($message);
+          }
+        } else {
+          $say = new Say($message);
+        }
+        
+        $p = array('channel', 'network', 'from', 'voice', 'timeout', 'answerOnMedia','headers','required','promptLogSecurity');
+        foreach ($p as $option) {
+          $$option = null;
+          if (is_array($params) && array_key_exists($option, $params)) {
+            $$option = $params[$option];
+          }
+        }
+        $message = new Message($say, $to, $name, $channel, $network, $from, $voice, $timeout, $answerOnMedia, $headers, $required, $promptLogSecurity);
+      } else {
+        throw new Exception("When Argument 1 passed to Tropo::message() is a string, argument 2 passed to Tropo::message() must be of the type array.");
+      }
+    } else {
+      throw new Exception("Argument 1 passed to Tropo::message() must be a string or an instance of Message.");
     }
+
     $this->message = sprintf('%s', $message);
   }
 
@@ -801,10 +920,10 @@ class Ask extends BaseClass {
   * @param float $speechIncompleteTimeout
   */
   public function __construct($attempts=NULL, $bargein=NULL, Choices $choices, $minConfidence=NULL, $name=NULL, $required=NULL, $say, $timeout=NULL, $voice=NULL, $allowSignals=NULL, $recognizer=NULL, $interdigitTimeout=NULL, $sensitivity=NULL, $speechCompleteTimeout=NULL, $speechIncompleteTimeout=NULL, $promptLogSecurity=NULL, $asrLogSecurity=NULL, $maskTemplate=NULL) {
-    if(!$choices) {
+    if(!isset($choices)) {
       throw new Exception("Missing required property: 'choices'");
     }
-    if(!$say) {
+    if(!isset($say)) {
       throw new Exception("Missing required property: 'say'");
     }
     $this->_attempts = $attempts;
@@ -1094,6 +1213,21 @@ class Message extends BaseClass {
   private $_timeout;
   private $_answerOnMedia;
   private $_headers;
+  private $_name;
+  private $_required;
+  private $_promptLogSecurity;
+
+  public function getSay() {
+    return $this->_say;
+  }
+
+  public function getTo() {
+    return $this->_to;
+  }
+
+  public function getName() {
+    return $this->_name;
+  }
 
   /**
   * Class constructor
@@ -1108,9 +1242,23 @@ class Message extends BaseClass {
   * @param boolean $answerOnMedia
   * @param array $headers
   */
-  public function __construct(Say $say, $to, $channel=null, $network=null, $from=null, $voice=null, $timeout=null, $answerOnMedia=null, Array $headers=null) {
-    $this->_say = isset($say) ? sprintf('%s', $say) : null ;
+  public function __construct($say, $to, $name, $channel=null, $network=null, $from=null, $voice=null, $timeout=null, $answerOnMedia=null, Array $headers=null, $required=null, $promptLogSecurity=null) {
+    if(!isset($say)) {
+      throw new Exception("Missing required property: 'say'");
+    }
+    if(!isset($to)) {
+      throw new Exception("Missing required property: 'to'");
+    }
+    if(!isset($name)) {
+      throw new Exception("Missing required property: 'name'");
+    }
+    if ($say instanceof Say) {
+      $this->_say = sprintf('%s', $say);
+    } else {
+      $this->_say = $say;
+    }
     $this->_to = $to;
+    $this->_name = $name;
     $this->_channel = $channel;
     $this->_network = $network;
     $this->_from = $from;
@@ -1118,6 +1266,8 @@ class Message extends BaseClass {
     $this->_timeout = $timeout;
     $this->_answerOnMedia = $answerOnMedia;
     $this->_headers = $headers;
+    $this->_required = $required;
+    $this->_promptLogSecurity = $promptLogSecurity;
   }
 
   /**
@@ -1126,7 +1276,13 @@ class Message extends BaseClass {
   */
   public function __toString() {
     $this->say = $this->_say;
+    if (is_array($this->_say)) {
+      foreach ($this->_say as $k => $v) {
+        $this->_say[$k] = sprintf('%s', $v);
+      }
+    }
     $this->to = $this->_to;
+    $this->name = $this->_name;
     if(isset($this->_channel)) { $this->channel = $this->_channel; }
     if(isset($this->_network)) { $this->network = $this->_network; }
     if(isset($this->_from)) { $this->from = $this->_from; }
@@ -1134,6 +1290,8 @@ class Message extends BaseClass {
     if(isset($this->_timeout)) { $this->timeout = $this->_timeout; }
     if(isset($this->_answerOnMedia)) { $this->answerOnMedia = $this->_answerOnMedia; }
     if(count($this->_headers)) { $this->headers = $this->_headers; }
+    if(count($this->_required)) { $this->required = $this->_required; }
+    if(count($this->_promptLogSecurity)) { $this->promptLogSecurity = $this->_promptLogSecurity; }
     return $this->unescapeJSON(json_encode($this));
   }
 }
@@ -2048,6 +2206,7 @@ class Network {
   public static $sms = "SMS";
   public static $yahoo = "YAHOO";
   public static $twitter = "TWITTER";
+  public static $sip = "SIP";
 }
 
 /**

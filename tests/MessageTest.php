@@ -1,50 +1,88 @@
 <?php
-require_once 'PHPUnit/Framework.php';
+use PHPUnit\Framework\TestCase;
 require_once 'tropo.class.php';
  
 class MessageTest extends PHPUnit_Framework_TestCase
 {
 
-    public $partial;
-    public $expected;
-      
-    public function MessageTest() {
-      $this->partial = '{"say":{"value":"This is an announcement"},"to":"3055195825","channel":"TEXT","network":"SMS","from":"3055551212","voice":"kate","timeout":10,"answerOnMedia":false,"headers":{"foo":"bar","bling":"baz"}}';
-      $this->expected = '{"tropo":[{"message":' . $this->partial . '}]}';
-    }
-
-    public function testUseAllOptions()
-    {
+    public function testMessageWithMinOptions() {
       $tropo = new Tropo();
-      $options = array(
-          'to' => "3055195825",
-          'from' => "3055551212",
-          'network' => "SMS",
-          'channel' => "TEXT",
-          'answerOnMedia' => false,
-          'timeout' => 10,
-          'headers' => array('foo'=>'bar','bling'=>'baz'),
-          'voice' => 'kate'
+      $params = array(
+        'to' => 'sip:pengxli@192.168.26.1:5678',
+        'name' => 'foo'
         );
-      $tropo->message("This is an announcement",$options);        
-      $this->assertEquals($this->expected, sprintf($tropo)); 
+      $tropo->message("This is an announcement.", $params);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":{"value":"This is an announcement."},"to":"sip:pengxli@192.168.26.1:5678","name":"foo"}}]}');
     }
 
-    public function testUseDifferentOptionsOrder()
-    {
+    public function testMessageWithExtraSayOptiions() {
       $tropo = new Tropo();
-      $options = array(
-        'from' => "3055551212",
-        'network' => "SMS",
-        'timeout' => 10,
-        'headers' => array('foo'=>'bar','bling'=>'baz'),
-        'channel' => "TEXT",
-        'to' => "3055195825",
+      $say = "Remember, you have a meeting at 2 PM.";
+      $params = array(
+        'say' => $say,
+        'to' => 'sip:pengxli@192.168.26.1:5678',
+        'name' => 'foo'
+        );
+      $tropo->message("This is an announcement.", $params);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":[{"value":"This is an announcement."},{"value":"Remember, you have a meeting at 2 PM."}],"to":"sip:pengxli@192.168.26.1:5678","name":"foo"}}]}');
+    }
+
+    public function testMessageWithAllOptions() {
+      $tropo = new Tropo();
+      $say = array('Remember, you have a meeting at 2 PM.', 'This is tropo.com.');
+      $to = array('sip:pengxli@192.168.26.1:5678', 'sip:pengxli@172.16.72.131:5678');
+      $headers = array('foo' => 'bar', 'bling' => 'baz');
+      $params = array(
+        'say' => $say,
+        'to' => $to,
+        'name' => 'foo',
         'answerOnMedia' => false,
-        'voice' => 'kate'
+        'channel' => Channel::$voice,
+        'from' => '3055551000',
+        'network' => Network::$sip,
+        'required' => true,
+        'timeout' => 60,
+        'voice' => Voice::$US_English_female_allison,
+        'promptLogSecurity' => 'suppress',
+        'headers' => $headers
         );
-      $tropo->message("This is an announcement",$options);        
-      $this->assertEquals($this->expected, sprintf($tropo)); 
+      $tropo->message("This is an announcement.", $params);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":[{"value":"This is an announcement."},{"value":"Remember, you have a meeting at 2 PM."},{"value":"This is tropo.com."}],"to":["sip:pengxli@192.168.26.1:5678","sip:pengxli@172.16.72.131:5678"],"name":"foo","channel":"VOICE","network":"SIP","from":"3055551000","voice":"allison","timeout":60,"answerOnMedia":false,"headers":{"foo":"bar","bling":"baz"},"required":true,"promptLogSecurity":"suppress"}}]}');
+    }
+
+    public function testCreateMinObject() {
+      $tropo = new Tropo();
+      $message = new Message(new Say("This is an announcement."), "sip:pengxli@192.168.26.1:5678", "foo");
+      $tropo->message($message);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":{"value":"This is an announcement."},"to":"sip:pengxli@192.168.26.1:5678","name":"foo"}}]}');
+    }
+
+    public function testCreateObject1() {
+      $tropo = new Tropo();
+      $say = array(
+        new Say("This is an announcement."),
+        new Say("Remember, you have a meeting at 2 PM.")
+        );
+      $message = new Message($say, "sip:pengxli@192.168.26.1:5678", "foo");
+      $tropo->message($message);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":[{"value":"This is an announcement."},{"value":"Remember, you have a meeting at 2 PM."}],"to":"sip:pengxli@192.168.26.1:5678","name":"foo"}}]}');
+    }
+
+    public function testCreateObject2() {
+      $tropo = new Tropo();
+      $say = array(
+        new Say("This is an announcement."),
+        new Say("Remember, you have a meeting at 2 PM."),
+        new Say("This is tropo.com.")
+        );
+      $to = array(
+        'sip:pengxli@192.168.26.1:5678',
+        'sip:pengxli@172.16.72.131:5678'
+        );
+      $headers = array('foo' => 'bar', 'bling' => 'baz');
+      $message = new Message($say, $to, "foo", Channel::$voice, Network::$sip, "3055551000", Voice::$US_English_female_allison, 60, false, $headers, true, "suppress");
+      $tropo->message($message);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":[{"value":"This is an announcement."},{"value":"Remember, you have a meeting at 2 PM."},{"value":"This is tropo.com."}],"to":["sip:pengxli@192.168.26.1:5678","sip:pengxli@172.16.72.131:5678"],"name":"foo","channel":"VOICE","network":"SIP","from":"3055551000","voice":"allison","timeout":60,"answerOnMedia":false,"headers":{"foo":"bar","bling":"baz"},"required":true,"promptLogSecurity":"suppress"}}]}');
     }
 }
 ?>
