@@ -239,17 +239,47 @@ class Tropo extends BaseClass {
   * @see https://www.tropo.com/docs/webapi/conference.htm
   */
   public function conference($conference, Array $params=NULL) {
-    if(!is_object($conference)) {
-      $p = array('name', 'id', 'mute', 'on', 'playTones', 'required', 'terminator', 'allowSignals', 'interdigitTimeout', 'joinPrompt', 'leavePrompt', 'voice');
-      foreach ($p as $option) {
-        $$option = null;
-        if (is_array($params) && array_key_exists($option, $params)) {
-          $$option = $params[$option];
-        }
+    if ($conference instanceof Conference) {
+
+      if(null === $conference->getId()) {
+        throw new Exception("Missing required property: 'id'");
       }
-      $id = (empty($id) && !empty($conference)) ? $conference : $id;
-      $name = (empty($name)) ? (string)$id : $name;
-      $conference = new Conference($name, $id, $mute, $on, $playTones, $required, $terminator, $allowSignals, $interdigitTimeout, $joinPrompt, $leavePrompt, $voice);
+      if(null === $conference->getName()) {
+        throw new Exception("Missing required property: 'name'");
+      }
+
+    } elseif (is_string($conference) && ($conference !== '')) {
+
+      if (isset($params) && is_array($params)) {
+
+        if (array_key_exists('name', $params)) {
+          if (is_string($params["name"]) && ($params["name"] !=='')) {
+            $name = $params["name"];
+          } else {
+            throw new Exception("'name' must be is a string.");
+          }
+        } else {
+          throw new Exception("Missing required property: 'name'");
+        }
+
+        $p = array('name', 'mute', 'on', 'playTones', 'required', 'terminator', 'allowSignals', 'interdigitTimeout', 'joinPrompt', 'leavePrompt', 'voice', 'promptLogSecurity');
+        foreach ($p as $option) {
+          $$option = null;
+          if (array_key_exists($option, $params)) {
+            $$option = $params[$option];
+          }
+        }
+        $id = $conference;
+        $conference = new Conference($name, $id, $mute, $on, $playTones, $required, $terminator, $allowSignals, $interdigitTimeout, $joinPrompt, $leavePrompt, $voice, $promptLogSecurity);
+      } else {
+
+        throw new Exception("When Argument 1 passed to Tropo::conference() is a string, argument 2 passed to Tropo::conference() must be of the type array.");
+
+      }
+    } else {
+
+      throw new Exception("Argument 1 passed to Tropo::conference() must be a string or an instance of Conference.");
+
     }
     $this->conference = sprintf('%s', $conference);
   }
@@ -1190,7 +1220,6 @@ class Conference extends BaseClass {
   private $_id;
   private $_mute;
   private $_name;
-  private $_on;
   private $_playTones;
   private $_required;
   private $_terminator;
@@ -1198,7 +1227,14 @@ class Conference extends BaseClass {
   private $_interdigitTimeout;
   private $_joinPrompt;
   private $_leavePrompt;
-  private $_voice;
+  private $_promptLogSecurity;
+
+  public function getName() {
+    return $this->_name;
+  }
+  public function getId() {
+    return $this->_id;
+  }
 
 
   /**
@@ -1214,11 +1250,16 @@ class Conference extends BaseClass {
   * @param string|array $allowSignals
   * @param int $interdigitTimeout
   */
-  public function __construct($name, $id=NULL, $mute=NULL, On $on=NULL, $playTones=NULL, $required=NULL, $terminator=NULL, $allowSignals=NULL, $interdigitTimeout=NULL, $joinPrompt=NULL, $leavePrompt=NULL, $voice=NULL) {
+  public function __construct($name, $id, $mute=NULL, On $on=NULL, $playTones=NULL, $required=NULL, $terminator=NULL, $allowSignals=NULL, $interdigitTimeout=NULL, $joinPrompt=NULL, $leavePrompt=NULL, $voice=NULL, $promptLogSecurity=NULL) {
+    if(!isset($name)) {
+      throw new Exception("Missing required property: 'name'");
+    }
+    if(!isset($id)) {
+      throw new Exception("Missing required property: 'id'");
+    }
     $this->_name = $name;
     $this->_id = (string) $id;
     $this->_mute = $mute;
-    $this->_on = isset($on) ? sprintf('%s', $on) : null;
     $this->_playTones = $playTones;
     $this->_required = $required;
     $this->_terminator = $terminator;
@@ -1226,7 +1267,7 @@ class Conference extends BaseClass {
     $this->_interdigitTimeout = $interdigitTimeout;
     $this->_joinPrompt = $joinPrompt;
     $this->_leavePrompt = $leavePrompt;
-    $this->_voice = $voice;
+    $this->_promptLogSecurity = $promptLogSecurity;
   }
 
   /**
@@ -1235,14 +1276,14 @@ class Conference extends BaseClass {
   */
   public function __toString() {
     $this->name = $this->_name;
-    if(isset($this->_id)) { $this->id = $this->_id; }
+    $this->id = $this->_id;
     if(isset($this->_mute)) { $this->mute = $this->_mute; }
-    if(isset($this->_on)) { $this->on = $this->_on; }
     if(isset($this->_playTones)) { $this->playTones = $this->_playTones; }
     if(isset($this->_required)) { $this->required = $this->_required; }
     if(isset($this->_terminator)) { $this->terminator = $this->_terminator; }
     if(isset($this->_allowSignals)) { $this->allowSignals = $this->_allowSignals; }
     if(isset($this->_interdigitTimeout)) { $this->interdigitTimeout = $this->_interdigitTimeout; }
+    if(isset($this->_promptLogSecurity)) { $this->promptLogSecurity = $this->_promptLogSecurity; }
     if(isset($this->_joinPrompt)) {
       if($this->_joinPrompt == true || $this->_joinPrompt == false){
         $this->joinPrompt = $this->_joinPrompt; 

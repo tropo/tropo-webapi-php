@@ -1,77 +1,94 @@
 <?php
-require_once 'PHPUnit/Framework.php';
+use PHPUnit\Framework\TestCase;
 require_once 'tropo.class.php';
  
 class ConferenceTest extends PHPUnit_Framework_TestCase
 {
-    public $partial;
-    public $expected;
-        
-    public function ConferenceTest() {
-      $this->partial = '{"id":1234,"mute":false,"name":"foo","playTones":false,"terminator":"#"}';
-      $this->expected = '{"tropo":[{"conference":' . $this->partial . '}]}';
-    }
-    
-    public function testCreateConferenceObject()
-    {
-      $conference = new Conference(1234, false, "foo", NULL, false, NULL, "#");
-      $this->assertEquals($this->partial, sprintf($conference));
-    }
 
-
-    public function testConferenceFromObject()
-    {
-      $conference = new Conference(1234, false, "foo", NULL, false, NULL, "#");
+    public function testConferenceWithMinOptions() {
       $tropo = new Tropo();
-      $tropo->Conference($conference);
-      $this->assertEquals($this->expected, sprintf($tropo));
-    }
-    
-    public function testConferenceWithOptions()
-    {
-      $options = array(
-          'id' => 1234,
-          'mute' => 'false',
-          'name' => 'foo',
-          'playTones' => false,
-          'terminator' => '#'
-        );
-      $tropo = new Tropo();
-      $tropo->Conference($options);
-      $this->assertEquals($this->expected, sprintf($tropo));
-    }
-    
-    public function testConferenceWithOptionsInDifferentOrder()
-    {
-      $options = array(
-        'terminator' => '#',
-        'playTones' => false,
-        'id' => 1234,
-        'mute' => 'false',
+      $params = array(
         'name' => 'foo'
         );
-      $tropo = new Tropo();
-      $tropo->Conference($options);
-      $this->assertEquals($this->expected, sprintf($tropo));
+      $tropo->conference("1234", $params);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"conference":{"name":"foo","id":"1234"}}]}');
     }
-    
-    public function testConferenceWithOnHandler() {
-      $say = new Say('Welcome to the conference. Press the pound key to exit.');
-      // Set up an On object to handle the event.
-      // Note - statically calling the properties of the Event object can be used 
-      //   as the first parameter to the On Object constructor.
-      $on = new On(Event::$join, NULL, $say);
-      $options = array(
-        'id' => 1234,
-        'mute' => 'false',
-        'terminator' => '#',
-        'playTones' => false,
-        'name' => 'foo',
-        'on' => $on
-        );
+
+    public function testConferenceWithAllOptions() {
       $tropo = new Tropo();
-      $tropo->Conference($options);
-      $this->assertEquals('{"tropo":[{"conference":{"id":1234,"mute":false,"on":{"event":"join","say":{"value":"Welcome to the conference. Press the pound key to exit."},"name":"foo","playTones":false,"terminator":"#"}}]}', sprintf($tropo));
+      $allowSignals = array('exit', 'quit');
+      $params = array(
+        'allowSignals' => $allowSignals,
+        'interdigitTimeout' => 5.0,
+        'joinPrompt' => true,
+        'leavePrompt' => true,
+        'mute' => false,
+        'name' => 'foo',
+        'playTones' => true,
+        'required' => true,
+        'terminator' => '*',
+        'promptLogSecurity' => 'suppress',
+        );
+      $tropo->conference("1234", $params);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"conference":{"name":"foo","id":"1234","mute":false,"playTones":true,"required":true,"terminator":"*","allowSignals":["exit","quit"],"interdigitTimeout":5,"promptLogSecurity":"suppress","joinPrompt":true,"leavePrompt":true}}]}');
+    }
+
+    public function testConferenceWithAllOptions1() {
+      $tropo = new Tropo();
+      $allowSignals = array('exit', 'quit');
+      $joinPrompt = array(
+        'value' => 'I am coming.',
+        'voice' => Voice::$US_English_female_allison
+        );
+      $leavePrompt = array(
+        'value' => 'I am leaving.',
+        'voice' => Voice::$US_English_female_allison
+        );
+      $params = array(
+        'allowSignals' => $allowSignals,
+        'interdigitTimeout' => 5.0,
+        'joinPrompt' => $joinPrompt,
+        'leavePrompt' => $leavePrompt,
+        'mute' => false,
+        'name' => 'foo',
+        'playTones' => true,
+        'required' => true,
+        'terminator' => '*',
+        'promptLogSecurity' => 'suppress',
+        );
+      $tropo->conference("1234", $params);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"conference":{"name":"foo","id":"1234","mute":false,"playTones":true,"required":true,"terminator":"*","allowSignals":["exit","quit"],"interdigitTimeout":5,"promptLogSecurity":"suppress","joinPrompt":{"value":"I am coming.","voice":"allison"},"leavePrompt":{"value":"I am leaving.","voice":"allison"}}}]}');
+    }
+
+    public function testCreateMinObject() {
+      $tropo = new Tropo();
+      $conference = new Conference("foo", "1234");
+      $tropo->conference($conference);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"conference":{"name":"foo","id":"1234"}}]}');
+    }
+
+    public function testCreateObject1() {
+      $tropo = new Tropo();
+      $allowSignals = array('exit', 'quit');
+      $conference = new Conference("foo", "1234", false, null, true, true, "*", $allowSignals, 5.0, true, true, null, "suppress");
+      $tropo->conference($conference);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"conference":{"name":"foo","id":"1234","mute":false,"playTones":true,"required":true,"terminator":"*","allowSignals":["exit","quit"],"interdigitTimeout":5,"promptLogSecurity":"suppress","joinPrompt":true,"leavePrompt":true}}]}');
+    }
+
+    public function testCreateObject2() {
+      $tropo = new Tropo();
+      $allowSignals = array('exit', 'quit');
+      $joinPrompt = array(
+        'value' => 'I am coming.',
+        'voice' => Voice::$US_English_female_allison
+        );
+      $leavePrompt = array(
+        'value' => 'I am leaving.',
+        'voice' => Voice::$US_English_female_allison
+        );
+      $conference = new Conference("foo", "1234", false, null, true, true, "*", $allowSignals, 5.0, $joinPrompt, $leavePrompt, null, "suppress");
+      $tropo->conference($conference);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"conference":{"name":"foo","id":"1234","mute":false,"playTones":true,"required":true,"terminator":"*","allowSignals":["exit","quit"],"interdigitTimeout":5,"promptLogSecurity":"suppress","joinPrompt":{"value":"I am coming.","voice":"allison"},"leavePrompt":{"value":"I am leaving.","voice":"allison"}}}]}');
     }
 }
 ?>
