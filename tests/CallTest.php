@@ -2,7 +2,7 @@
 use PHPUnit\Framework\TestCase;
 require_once 'tropo.class.php';
  
-class MessageTest extends PHPUnit_Framework_TestCase
+class CallTest extends PHPUnit_Framework_TestCase
 {
 
     public function testCallWithMinOptions() {
