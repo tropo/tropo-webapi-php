@@ -167,15 +167,65 @@ class Tropo extends BaseClass {
   * @see https://www.tropo.com/docs/webapi/call.htm
   */
   public function call($call, Array $params=NULL) {
-    if(!is_object($call)) {
-      $p = array('to', 'from', 'network', 'channel', 'answerOnMedia', 'timeout', 'headers', 'recording', 'allowSignals', 'machineDetection', 'voice');
-      foreach ($p as $option) {
-        $$option = null;
-        if (is_array($params) && array_key_exists($option, $params)) {
-          $$option = $params[$option];
-        }
+    if ($call instanceof Call) {
+
+      if(null === $call->getTo()) {
+        throw new Exception("Missing required property: 'to'");
       }
-      $call = new Call($call, $from, $network, $channel, $answerOnMedia, $timeout, $headers, $recording, $allowSignals, $machineDetection, $voice);
+      if(null === $call->getName()) {
+        throw new Exception("Missing required property: 'name'");
+      }
+
+    } elseif (is_string($call) && ($call !== '')) {
+
+      if (isset($params) && is_array($params)) {
+
+        if (array_key_exists('name', $params)) {
+          if (is_string($params["name"]) && ($params["name"] !=='')) {
+            $name = $params["name"];
+          } else {
+            throw new Exception("'name' must be is a string.");
+          }
+        } else {
+          throw new Exception("Missing required property: 'name'");
+        }
+
+        if (array_key_exists('to', $params)) {
+          if (is_array($params["to"])) {
+            $to[] = $call;
+            foreach ($params["to"] as $value) {
+              if (is_string($value) && ($value !== '')) {
+                $to[] = $value;
+              }
+            }
+          } elseif (is_string($params["to"]) && ($params["to"] !== '')) {
+            $to[] = $call;
+            $to[] = $params["to"];
+          } else {
+            $to = $call;
+          }
+        } else {
+          $to = $call;
+        }
+
+        $p = array('from', 'network', 'channel', 'answerOnMedia', 'timeout', 'headers', 'allowSignals', 'machineDetection', 'voice', 'required', 'callbackUrl', 'promptLogSecurity', 'label');
+        foreach ($p as $option) {
+          $$option = null;
+          if (array_key_exists($option, $params)) {
+            $$option = $params[$option];
+          }
+        }
+        $call = new Call($to, $from, $network, $channel, $answerOnMedia, $timeout, $headers, null, $allowSignals, $machineDetection, $voice, $name, $required, $callbackUrl, $promptLogSecurity, $label);
+
+      } else {
+
+        throw new Exception("When Argument 1 passed to Tropo::call() is a string, argument 2 passed to Tropo::call() must be of the type array.");
+
+      }
+    } else {
+
+      throw new Exception("Argument 1 passed to Tropo::call() must be a string or an instance of Call.");
+
     }
     $this->call = sprintf('%s', $call);
   }
@@ -1004,10 +1054,22 @@ class Call extends BaseClass {
   private $_answerOnMedia;
   private $_timeout;
   private $_headers;
-  private $_recording;
   private $_allowSignals;
   private $_machineDetection;
   private $_voice;
+  private $_name;
+  private $_required;
+  private $_callbackUrl;
+  private $_promptLogSecurity;
+  private $_label;
+
+  public function getTo() {
+    return $this->_to;
+  }
+
+  public function getName() {
+    return $this->_name;
+  }
 
   /**
   * Class constructor
@@ -1022,7 +1084,13 @@ class Call extends BaseClass {
   * @param StartRecording $recording
   * @param string|array $allowSignals
   */
-  public function __construct($to, $from=NULL, $network=NULL, $channel=NULL, $answerOnMedia=NULL, $timeout=NULL, Array $headers=NULL, StartRecording $recording=NULL, $allowSignals=NULL, $machineDetection=NULL, $voice=NULL) {
+  public function __construct($to, $from=NULL, $network=NULL, $channel=NULL, $answerOnMedia=NULL, $timeout=NULL, Array $headers=NULL, StartRecording $recording=NULL, $allowSignals=NULL, $machineDetection=NULL, $voice=NULL, $name, $required=NULL, $callbackUrl=NULL, $promptLogSecurity=NULL, $label=NULL) {
+    if(!isset($to)) {
+      throw new Exception("Missing required property: 'to'");
+    }
+    if(!isset($name)) {
+      throw new Exception("Missing required property: 'name'");
+    }
     $this->_to = $to;
     $this->_from = $from;
     $this->_network = $network;
@@ -1030,10 +1098,14 @@ class Call extends BaseClass {
     $this->_answerOnMedia = $answerOnMedia;
     $this->_timeout = $timeout;
     $this->_headers = $headers;
-    $this->_recording = isset($recording) ? sprintf('%s', $recording) : null ;
     $this->_allowSignals = $allowSignals;
     $this->_machineDetection = $machineDetection;
     $this->_voice = $voice;
+    $this->_name = $name;
+    $this->_required = $required;
+    $this->_callbackUrl = $callbackUrl;
+    $this->_promptLogSecurity = $promptLogSecurity;
+    $this->_label = $label;
   }
 
   /**
@@ -1048,18 +1120,23 @@ class Call extends BaseClass {
     if(isset($this->_timeout)) { $this->timeout = $this->_timeout; }
     if(isset($this->_answerOnMedia)) { $this->answerOnMedia = $this->_answerOnMedia; }
     if(count($this->_headers)) { $this->headers = $this->_headers; }
-    if(isset($this->_recording)) { $this->recording = $this->_recording; }
     if(isset($this->_allowSignals)) { $this->allowSignals = $this->_allowSignals; }
     if(isset($this->_machineDetection)) {
       if(is_bool($this->_machineDetection)){
         $this->machineDetection = $this->_machineDetection; 
       }else{
-        $this->machineDetection->introduction = $this->_machineDetection; 
+        $this->machineDetection['introduction'] = $this->_machineDetection; 
         if(isset($this->_voice)){
-          $this->machineDetection->voice = $this->_voice; 
+          $this->machineDetection['voice'] = $this->_voice; 
         }
       }
     }
+    if(isset($this->_voice)) { $this->voice = $this->_voice; }
+    $this->name = $this->_name;
+    if(isset($this->_required)) { $this->required = $this->_required; }
+    if(isset($this->_callbackUrl)) { $this->callbackUrl = $this->_callbackUrl; }
+    if(isset($this->_promptLogSecurity)) { $this->promptLogSecurity = $this->_promptLogSecurity; }
+    if(isset($this->_label)) { $this->label = $this->_label; }
     return $this->unescapeJSON(json_encode($this));
   }
 }
