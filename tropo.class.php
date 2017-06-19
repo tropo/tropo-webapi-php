@@ -424,9 +424,19 @@ class Tropo extends BaseClass {
   * @see https://www.tropo.com/docs/webapi/record.htm
   */
   public function record($record) {
-    if(!is_object($record) && is_array($record)) {
+    if ($record instanceof Record) {
+
+      if(null === $record->getUrl()) {
+        throw new Exception("Missing required property: 'url'");
+      }
+      if(null === $record->getName()) {
+        throw new Exception("Missing required property: 'name'");
+      }
+
+    } elseif (is_array($record)) {
+
       $params = $record;
-      $p = array('as', 'voice', 'emailFormat', 'transcription', 'terminator');
+      $p = array('voice', 'emailFormat', 'transcription', 'terminator');
       foreach ($p as $option) {
         $params[$option] = array_key_exists($option, $params) ? $params[$option] : null;
       }
@@ -439,7 +449,6 @@ class Tropo extends BaseClass {
       if (!isset($params['voice'])) {
         $params['voice'] = $this->_voice;
       }
-      $say = new Say($params["say"], $params["as"], null, null);
       if (is_array($params['transcription'])) {
         $p = array('url', 'id', 'emailFormat');
         foreach ($p as $option) {
@@ -452,14 +461,37 @@ class Tropo extends BaseClass {
       } else {
         $transcription = $params["transcription"];
       }
-      $p = array('attempts', 'allowSignals', 'bargein', 'beep', 'format', 'maxTime', 'maxSilence', 'method', 'password', 'required', 'timeout', 'username', 'url', 'voice', 'minConfidence', 'interdigitTimeout');
+      $p = array('attempts', 'allowSignals', 'bargein', 'beep', 'format', 'maxTime', 'maxSilence', 'method', 'password', 'required', 'timeout', 'username', 'url', 'voice', 'minConfidence', 'interdigitTimeout', 'asyncUpload', 'name', 'promptLogSecurity');
       foreach ($p as $option) {
         $$option = null;
         if (is_array($params) && array_key_exists($option, $params)) {
           $$option = $params[$option];
         }
       }
-      $record = new Record($attempts, $allowSignals, $bargein, $beep, $choices, $format, $maxSilence, $maxTime, $method, $password, $required, $say, $timeout, $transcription, $username, $url, $voice, $minConfidence, $interdigitTimeout);
+      if (array_key_exists('say', $params)) {
+        if (is_string($params["say"]) && ($params["say"] !== '')) {
+
+          $say[] = new Say($params["say"]);
+
+        }
+      }
+      if (array_key_exists('event', $params)) {
+
+        if (is_array($params["event"])) {
+          foreach ($params["event"] as $e => $value) {
+            $say[] = new Say($value, null, $e);
+          }
+        }
+      }
+      if (!isset($say)) {
+        $say = null;
+      }
+      $record = new Record($attempts, $allowSignals, $bargein, $beep, $choices, $format, $maxSilence, $maxTime, $method, $password, $required, $say, $timeout, $transcription, $username, $url, $voice, $minConfidence, $interdigitTimeout, $asyncUpload, $name, $promptLogSecurity);
+      
+    } else {
+
+      throw new Exception("Argument 1 passed to Tropo::record() must be a array or an instance of Record.");
+
     }
     $this->record = sprintf('%s', $record);
   }
@@ -1492,8 +1524,18 @@ class Record extends BaseClass {
   private $_username;
   private $_url;
   private $_voice;
-  private $_minConfidence;
   private $_interdigitTimeout;
+  private $_asyncUpload;
+  private $_name;
+  private $_promptLogSecurity;
+
+  public function getUrl() {
+    return $this->_url;
+  }
+
+  public function getName() {
+    return $this->_name;
+  }
 
 
   /**
@@ -1517,7 +1559,13 @@ class Record extends BaseClass {
   * @param int $minConfidence
   * @param int $interdigitTimeout
   */
-  public function __construct($attempts=NULL, $allowSignals=NULL, $bargein=NULL, $beep=NULL, Choices $choices=NULL, $format=NULL, $maxSilence=NULL, $maxTime=NULL, $method=NULL, $password=NULL, $required=NULL, $say=NULL, $timeout=NULL, Transcription $transcription=NULL, $username=NULL, $url=NULL, $voice=NULL, $minConfidence=NULL, $interdigitTimeout=NULL) {
+  public function __construct($attempts=NULL, $allowSignals=NULL, $bargein=NULL, $beep=NULL, Choices $choices=NULL, $format=NULL, $maxSilence=NULL, $maxTime=NULL, $method=NULL, $password=NULL, $required=NULL, $say=NULL, $timeout=NULL, Transcription $transcription=NULL, $username=NULL, $url, $voice=NULL, $minConfidence=NULL, $interdigitTimeout=NULL, $asyncUpload=NULL, $name, $promptLogSecurity=NULL) {
+    if(!isset($url)) {
+      throw new Exception("Missing required property: 'url'");
+    }
+    if(!isset($name)) {
+      throw new Exception("Missing required property: 'name'");
+    }
     $this->_attempts = $attempts;
     $this->_allowSignals = $allowSignals;
     $this->_bargein = $bargein;
@@ -1528,17 +1576,21 @@ class Record extends BaseClass {
     $this->_maxTime = $maxTime;
     $this->_method = $method;
     $this->_password = $password;
-    if (!is_object($say)) {
-      $say = new Say($say);
+    $this->_required = $required;
+    if ($say instanceof Say) {
+      $this->_say = sprintf('%s', $say);
+    } else {
+      $this->_say = $say;
     }
-    $this->_say = isset($say) ? sprintf('%s', $say) : null;
     $this->_timeout = $timeout;
     $this->_transcription = isset($transcription) ? sprintf('%s', $transcription) : null;
     $this->_username = $username;
     $this->_url = $url;
     $this->_voice = $voice;
-    $this->_minConfidence = $minConfidence;
     $this->_interdigitTimeout = $interdigitTimeout;
+    $this->_asyncUpload = $asyncUpload;
+    $this->_name = $name;
+    $this->_promptLogSecurity = $promptLogSecurity;
   }
 
   /**
@@ -1556,14 +1608,22 @@ class Record extends BaseClass {
     if(isset($this->_maxTime)) { $this->maxTime = $this->_maxTime; }
     if(isset($this->_method)) { $this->method = $this->_method; }
     if(isset($this->_password)) { $this->password = $this->_password; }
+    if(isset($this->_required)) { $this->required = $this->_required; }
     if(isset($this->_say)) { $this->say = $this->_say; }
+    if (is_array($this->_say)) {
+      foreach ($this->_say as $k => $v) {
+        $this->_say[$k] = sprintf('%s', $v);
+      }
+    }
     if(isset($this->_timeout)) { $this->timeout = $this->_timeout; }
     if(isset($this->_transcription)) { $this->transcription = $this->_transcription; }
     if(isset($this->_username)) { $this->username = $this->_username; }
     if(isset($this->_url)) { $this->url = $this->_url; }
     if(isset($this->_voice)) { $this->voice = $this->_voice; }
-    if(isset($this->_minConfidence)) { $this->minConfidence = $this->_minConfidence; }
     if(isset($this->_interdigitTimeout)) { $this->interdigitTimeout = $this->_interdigitTimeout; }
+    if(isset($this->_asyncUpload)) { $this->asyncUpload = $this->_asyncUpload; }
+    if(isset($this->_name)) { $this->name = $this->_name; }
+    if(isset($this->_promptLogSecurity)) { $this->promptLogSecurity = $this->_promptLogSecurity; }
     return $this->unescapeJSON(json_encode($this));
   }
 }
@@ -2343,6 +2403,7 @@ class Channel {
 class AudioFormat {
   public static $wav = "audio/wav";
   public static $mp3 = "audio/mp3";
+  public static $au = "audio/au";
 }
 
 /**
