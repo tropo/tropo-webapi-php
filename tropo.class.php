@@ -606,65 +606,101 @@ class Tropo extends BaseClass {
   * @see https://www.tropo.com/docs/webapi/transfer.htm
   */
   public function transfer($transfer, Array $params=NULL) {
-    if(!is_object($transfer)) {
-      $choices = isset($params["choices"]) ? $params["choices"] : null;
-      $choices = isset($params["terminator"])
-        ? new Choices(null, null, $params["terminator"]) 
-        : $choices;
-      $to = isset($params["to"]) ? $params["to"] : $transfer;
-      $p = array('answerOnMedia', 'ringRepeat', 'timeout', 'from', 'allowSignals', 'headers', 'machineDetection', 'voice');
-      foreach ($p as $option) {
-        $$option = null;
-        if (is_array($params) && array_key_exists($option, $params)) {
-          $$option = $params[$option];
-        }
+    if ($transfer instanceof Transfer) {//$transfer is an instance of Transfer
+
+      if(null === $transfer->getTo()) {
+        throw new Exception("Missing required property: 'to'");
       }
-      $on = null;
-      if (array_key_exists('playvalue', $params) && isset($params['playvalue'])) {
-        $on = new On('ring', null, new Say($params['playvalue']));
-      } elseif (array_key_exists('on', $params) && isset($params['on'])) {
-        if (is_object($params['on'])) {
-          $on = $params['on'];
-        } else {
-          if (strtolower($params['on']['event']) == 'ring') {
-            $on = on(array('ring', null, new Say($params['on']['say']), null, null));
-          }elseif (strtolower($params['on']['event']) == 'connect') {
+      if(null === $transfer->getName()) {
+        throw new Exception("Missing required property: 'name'");
+      }
 
-            $comma = "";
-            $on = "";
-            
-            if(isset($params['on']['ring'])){
-              $on = new On('ring', null, new Say($params['on']['ring']), null, null);
-              $comma = ",";
-            }
-            foreach($params['on']['whisper'] as $key){
-              foreach($key as $k => $v){
+    } elseif (is_array($transfer) || (is_string($transfer) && ($transfer !== ''))) {//$transfer is a non-empty string or a non-empty string of array
 
-                switch($k){
-                  case 'ask':
-                  $on = $on . $comma . new On('connect', null, null, null,$v,null,null,"ask");
-                  break;
-                  case 'say':
-                  $on = $on . $comma . new On('connect', null, $v, null,null,null,null,"say");
-                  break;
-                  case 'wait':
-                  $on = $on . $comma . new On('connect', null, null, null,null,null,$v,"wait");
-                  break;
-                  case 'message':
-                  $on = $on . $comma . new On('connect', null, null, null,null,$v,null,"message");
-                  break;   
-                }
-                $comma = ",";
-              }
-            }
-
-          }else{
-            throw new TropoException("The only event allowed on transfer is 'ring' or 'connect'"); 
+      if (is_array($transfer)) {
+        $to = null;
+        foreach ($transfer as $value) {
+          if (is_string($value) && ($value !== '')) {
+            $to[] = $value;
           }
         }
+        if (null === $to) {
+
+          throw new Exception("Argument 1 passed to Tropo::transfer() must be a string or a string of array or an instance of Transfer.");
+
+        }
+      } else {
+        $to = $transfer;
       }
-      $on = $on == null ? null : sprintf('%s',$on);
-      $transfer = new Transfer($to, $answerOnMedia, $choices, $from, $ringRepeat, $timeout, $on, $allowSignals, $headers, $machineDetection, $voice);
+
+      if (isset($params) && is_array($params)) {
+
+        if (array_key_exists('name', $params)) {
+          if (is_string($params["name"]) && ($params["name"] !=='')) {
+            $name = $params["name"];
+          } else {
+            throw new Exception("'name' must be is a string.");
+          }
+        } else {
+          throw new Exception("Missing required property: 'name'");
+        }
+
+        $choices = null;
+        if (array_key_exists('choices', $params)) {
+
+          if ($params["choices"] instanceof Choices) {
+            $choices = $params["choices"];
+          } elseif (is_string($params["choices"]) && ($params["choices"] !== '')) {
+            $choices = new Choices(null, null, $params["choices"]);
+          } else {
+            $choices = null;
+          }
+        }
+
+        if (array_key_exists('terminator', $params)) {
+          if (is_string($params["terminator"]) && ($params["terminator"] !== '')) {
+            $choices = new Choices(null, null, $params["terminator"]);
+          }
+        }
+        
+        $p = array('answerOnMedia', 'ringRepeat', 'timeout', 'from', 'allowSignals', 'headers', 'machineDetection', 'voice', 'required', 'interdigitTimeout', 'playTones', 'callbackUrl', 'promptLogSecurity', 'label');
+        foreach ($p as $option) {
+          $$option = null;
+          if (array_key_exists($option, $params)) {
+            $$option = $params[$option];
+          }
+        }
+        $on = null;
+        if (array_key_exists('on', $params)) {
+          if ($params['on'] instanceof On) {
+            if (is_string($params['on']->getEvent()) && ((strtolower($params['on']->getEvent()) == 'ring') || (strtolower($params['on']->getEvent()) == 'connect'))) {
+              $on = $params['on'];
+            } else {
+              throw new TropoException("The only event allowed on transfer is 'ring' or 'connect'");
+            }
+          } elseif (is_array($params['on'])) {
+            foreach ($params['on'] as $value) {
+              if ($value instanceof On) {
+                if (is_string($value->getEvent()) && ((strtolower($value->getEvent()) == 'ring') || (strtolower($value->getEvent()) == 'connect'))) {
+                  $on[] = $value;
+                } else {
+                  throw new TropoException("The only event allowed on transfer is 'ring' or 'connect'");
+                }
+              }
+            }
+          }
+        }
+        $transfer = new Transfer($to, $answerOnMedia, $choices, $from, $ringRepeat, $timeout, $on, $allowSignals, $headers, $machineDetection, $voice, $name, $required, $interdigitTimeout, $playTones, $callbackUrl, $promptLogSecurity, $label);
+      } else {
+
+        throw new Exception("When Argument 1 passed to Tropo::transfer() is a string or a string of array, argument 2 passed to Tropo::transfer() must be of the type array.");
+
+      }
+
+    } else {
+
+      throw new Exception("Argument 1 passed to Tropo::transfer() must be a string or a string of array or an instance of Transfer.");
+
     }
     $this->transfer = sprintf('%s', $transfer);
   }
@@ -1212,6 +1248,18 @@ class Choices extends BaseClass {
   private $_value;
   private $_mode;
   private $_terminator;
+
+  public function getValue() {
+    return $this->_value;
+  }
+
+  public function getMode() {
+    return $this->_mode;
+  }
+
+  public function getTerminator() {
+    return $this->_terminator;
+  }
 
   /**
   * Class constructor
@@ -2165,6 +2213,20 @@ class Transfer extends BaseClass {
   private $_headers;
   private $_machineDetection;
   private $_voice;
+  private $_name;
+  private $_required;
+  private $_interdigitTimeout;
+  private $_playTones;
+  private $_callbackUrl;
+  private $_promptLogSecurity;
+  private $_label;
+
+  public function getTo() {
+    return $this->_to;
+  }
+  public function getName() {
+    return $this->_name;
+  }
 
   /**
   * Class constructor
@@ -2179,18 +2241,38 @@ class Transfer extends BaseClass {
   * @param string|array $allowSignals
   * @param array $headers
   */
-  public function __construct($to, $answerOnMedia=NULL, Choices $choices=NULL, $from=NULL, $ringRepeat=NULL, $timeout=NULL, $on=NULL, $allowSignals=NULL, Array $headers=NULL, $machineDetection=NULL, $voice=NULL) {
+  public function __construct($to, $answerOnMedia=NULL, Choices $choices=NULL, $from=NULL, $ringRepeat=NULL, $timeout=NULL, $on=NULL, $allowSignals=NULL, Array $headers=NULL, $machineDetection=NULL, $voice=NULL, $name, $required=NULL, $interdigitTimeout=NULL, $playTones=NULL, $callbackUrl=NULL, $promptLogSecurity=NULL, $label=NULL) {
+    if(!isset($to)) {
+      throw new Exception("Missing required property: 'to'");
+    }
+    if(!isset($name)) {
+      throw new Exception("Missing required property: 'name'");
+    }
     $this->_to = $to;
     $this->_answerOnMedia = $answerOnMedia;
     $this->_choices = isset($choices) ? sprintf('%s', $choices) : null;
     $this->_from = $from;
     $this->_ringRepeat = $ringRepeat;
     $this->_timeout = $timeout;
-    $this->_on = isset($on) ? array(sprintf('%s', $on)) : null;
+    $this->_on = null;
+    if (isset($on)) {
+      if ($on instanceof On) {
+        $this->_on = sprintf('%s', $on);
+      } else {
+        $this->_on = $on;
+      }
+    }
     $this->_allowSignals = $allowSignals;
     $this->_headers = $headers;
     $this->_machineDetection = $machineDetection;
     $this->_voice = $voice;
+    $this->_name = $name;
+    $this->_required = $required;
+    $this->_interdigitTimeout = $interdigitTimeout;
+    $this->_playTones = $playTones;
+    $this->_callbackUrl = $callbackUrl;
+    $this->_promptLogSecurity = $promptLogSecurity;
+    $this->_label = $label;
   }
 
   /**
@@ -2205,18 +2287,31 @@ class Transfer extends BaseClass {
     if(isset($this->_ringRepeat)) { $this->ringRepeat = $this->_ringRepeat; }
     if(isset($this->_timeout)) { $this->timeout = $this->_timeout; }
     if(isset($this->_on)) { $this->on = $this->_on; }
+    if (is_array($this->_on)) {
+      foreach ($this->_on as $k => $v) {
+        $this->_on[$k] = sprintf('%s', $v);
+      }
+    }
     if(isset($this->_allowSignals)) { $this->allowSignals = $this->_allowSignals; }
     if(count($this->_headers)) { $this->headers = $this->_headers; }
     if(isset($this->_machineDetection)) {
       if(is_bool($this->_machineDetection)){
         $this->machineDetection = $this->_machineDetection; 
       }else{
-        $this->machineDetection->introduction = $this->_machineDetection; 
+        $this->machineDetection['introduction'] = $this->_machineDetection; 
         if(isset($this->_voice)){
-          $this->machineDetection->voice = $this->_voice; 
+          $this->machineDetection['voice'] = $this->_voice; 
         }
       }
     }
+    if(isset($this->_voice)) { $this->voice = $this->_voice; }
+    $this->name = $this->_name;
+    if(isset($this->_required)) { $this->required = $this->_required; }
+    if(isset($this->_interdigitTimeout)) { $this->interdigitTimeout = $this->_interdigitTimeout; }
+    if(isset($this->_playTones)) { $this->playTones = $this->_playTones; }
+    if(isset($this->_callbackUrl)) { $this->callbackUrl = $this->_callbackUrl; }
+    if(isset($this->_promptLogSecurity)) { $this->promptLogSecurity = $this->_promptLogSecurity; }
+    if(isset($this->_label)) { $this->label = $this->_label; }
     return $this->unescapeJSON(json_encode($this));
   }
 }
