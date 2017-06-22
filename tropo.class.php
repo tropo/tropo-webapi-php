@@ -573,16 +573,32 @@ class Tropo extends BaseClass {
   * @see https://www.tropo.com/docs/webapi/startrecording.htm
   */
   public function startRecording($startRecording) {
-    if(!is_object($startRecording) && is_array($startRecording)) {
+    if ($startRecording instanceof StartRecording) {
+
+      if(null === $startRecording->getUrl()) {
+        throw new Exception("Missing required property: 'url'");
+      }
+
+    } elseif (is_array($startRecording)) {
+
+      if (!array_key_exists('url', $startRecording)) {
+        throw new Exception("Missing required property: 'url'");
+      }
+
       $params = $startRecording;
-      $p = array('format', 'method', 'password', 'url', 'username', 'transcriptionID', 'transcriptionEmailFormat', 'transcriptionOutURI');
+      $p = array('format', 'method', 'password', 'url', 'username', 'transcriptionID', 'transcriptionEmailFormat', 'transcriptionOutURI', 'asyncUpload');
       foreach ($p as $option) {
         $$option = null;
-        if (is_array($params) && array_key_exists($option, $params)) {
+        if (array_key_exists($option, $params)) {
           $$option = $params[$option];
         }
       }
-      $startRecording = new StartRecording($format, $method, $password, $url, $username, $transcriptionID, $transcriptionEmailFormat, $transcriptionOutURI);
+      $startRecording = new StartRecording($format, $method, $password, $url, $username, $transcriptionID, $transcriptionEmailFormat, $transcriptionOutURI, $asyncUpload);
+      
+    } else {
+
+      throw new Exception("Argument 1 passed to Tropo::startRecording() must be a array or an instance of StartRecording.");
+
     }
     $this->startRecording = sprintf('%s', $startRecording);
   }
@@ -2101,7 +2117,6 @@ class Session {
 */
 class StartRecording extends BaseClass {
 
-  private $_name;
   private $_format;
   private $_method;
   private $_password;
@@ -2110,6 +2125,11 @@ class StartRecording extends BaseClass {
   private $_transcriptionID;
   private $_transcriptionEmailFormat;
   private $_transcriptionOutURI;
+  private $_asyncUpload;
+
+  public function getUrl() {
+    return $this->_url;
+  }
 
   /**
   * Class constructor
@@ -2124,7 +2144,10 @@ class StartRecording extends BaseClass {
   * @param string $transcriptionEmailFormat
   * @param string $transcriptionOutURI
   */
-  public function __construct($format=NULL, $method=NULL, $password=NULL, $url=NULL, $username=NULL, $transcriptionID=NULL, $transcriptionEmailFormat=NULL, $transcriptionOutURI=NULL) {
+  public function __construct($format=NULL, $method=NULL, $password=NULL, $url, $username=NULL, $transcriptionID=NULL, $transcriptionEmailFormat=NULL, $transcriptionOutURI=NULL, $asyncUpload=NULL) {
+    if(!isset($url)) {
+      throw new Exception("Missing required property: 'url'");
+    }
     $this->_format = $format;
     $this->_method = $method;
     $this->_password = $password;
@@ -2133,6 +2156,7 @@ class StartRecording extends BaseClass {
     $this->_transcriptionID = $transcriptionID;
     $this->_transcriptionEmailFormat = $transcriptionEmailFormat;
     $this->_transcriptionOutURI = $transcriptionOutURI;
+    $this->_asyncUpload = $asyncUpload;
   }
 
   /**
@@ -2148,6 +2172,7 @@ class StartRecording extends BaseClass {
     if(isset($this->_transcriptionID)) { $this->transcriptionID = $this->_transcriptionID; }
     if(isset($this->_transcriptionEmailFormat)) { $this->transcriptionEmailFormat = $this->_transcriptionEmailFormat; }
     if(isset($this->_transcriptionOutURI)) { $this->transcriptionOutURI = $this->_transcriptionOutURI; }
+    if(isset($this->_asyncUpload)) { $this->asyncUpload = $this->_asyncUpload; }
     return $this->unescapeJSON(json_encode($this));
   }
 }
