@@ -506,11 +506,47 @@ class Tropo extends BaseClass {
   * @see https://www.tropo.com/docs/webapi/redirect.htm
   */
   public function redirect($redirect, Array $params=NULL) {
-    if(!is_object($redirect)) {
-      $to = isset($params["to"]) ? $params["to"]: null;
-      $from = isset($params["from"]) ? $params["from"] : null;
-      $redirect = new Redirect($to, $from);
-    }
+    if ($redirect instanceof Redirect) {
+
+      if(null === $redirect->getTo()) {
+        throw new Exception("Missing required property: 'to'");
+      }
+      if(null === $redirect->getName()) {
+        throw new Exception("Missing required property: 'name'");
+      }
+
+    } elseif (is_string($redirect) && ($redirect !== '')) {
+
+      if (isset($params) && is_array($params)) {
+
+        if (array_key_exists('name', $params)) {
+          if (is_string($params["name"]) && ($params["name"] !=='')) {
+            $name = $params["name"];
+          } else {
+            throw new Exception("'name' must be is a string.");
+          }
+        } else {
+          throw new Exception("Missing required property: 'name'");
+        }
+
+        $required = null;
+        if (array_key_exists('required', $params)) {
+          $required = $params["required"];
+        }
+
+        $redirect = new Redirect($redirect, null, $name, $required);
+
+      } else {
+
+        throw new Exception("When Argument 1 passed to Tropo::redirect() is a string, argument 2 passed to Tropo::redirect() must be of the type array.");
+
+      }
+
+    } else {
+
+      throw new Exception("Argument 1 passed to Tropo::redirect() must be a string or an instance of Redirect.");
+
+    } 
     $this->redirect = sprintf('%s', $redirect);
   }
 
@@ -1713,7 +1749,16 @@ class Record extends BaseClass {
 class Redirect extends BaseClass {
 
   private $_to;
-  private $_from;
+  private $_name;
+  private $_required;
+
+  public function getTo() {
+    return $this->_to;
+  }
+
+  public function getName() {
+    return $this->_name;
+  }
 
   /**
   * Class constructor
@@ -1721,9 +1766,16 @@ class Redirect extends BaseClass {
   * @param Endpoint $to
   * @param Endpoint $from
   */
-  public function __construct($to=NULL, $from=NULL) {
+  public function __construct($to, $from=NULL, $name, $required) {
+    if(!isset($to)) {
+      throw new Exception("Missing required property: 'to'");
+    }
+    if(!isset($name)) {
+      throw new Exception("Missing required property: 'name'");
+    }
     $this->_to = sprintf('%s', $to);
-    $this->_from = isset($from) ? sprintf('%s', $from) : null;
+    $this->_name = sprintf('%s', $name);
+    $this->_required = $required;
   }
 
   /**
@@ -1732,7 +1784,8 @@ class Redirect extends BaseClass {
   */
   public function __toString() {
     $this->to = $this->_to;
-    if(isset($this->_from)) { $this->from = $this->_from; }
+    $this->name = $this->_name;
+    if(isset($this->_required)) { $this->required = $this->_required; }
     return $this->unescapeJSON(json_encode($this));
   }
 }
