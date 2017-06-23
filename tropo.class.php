@@ -738,6 +738,19 @@ class Tropo extends BaseClass {
     
   }
 
+  public function generalLogSecurity($state) {
+
+    if (is_string($state) && ($state !== '')) {
+
+      $this->generalLogSecurity = $state;
+
+    } else {
+
+      throw new Exception("Argument 1 passed to Tropo::generalLogSecurity() must be a string.");
+
+    }
+  }
+
   /**
   * Launches a new session with the Tropo Session API.
   * (Pass through to SessionAPI class.)
