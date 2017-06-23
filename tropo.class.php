@@ -1745,6 +1745,8 @@ class Result {
   private $_sequence;
   private $_complete;
   private $_error;
+  private $_calledid;
+  private $_userType;
   private $_actions;
   private $_name;
   private $_attempts;
@@ -1752,7 +1754,6 @@ class Result {
   private $_confidence;
   private $_interpretation;
   private $_concept;
-  private $_userType;
   private $_utterance;
   private $_value;
   private $_transcription;
@@ -1782,17 +1783,18 @@ class Result {
     $this->_sequence = $result->result->sequence;
     $this->_complete = $result->result->complete;
     $this->_error = $result->result->error;
-    $this->_userType = $result->result->userType;
-    $this->_actions = $result->result->actions;
-    $this->_name = $result->result->actions->name;
-    $this->_attempts = $result->result->actions->attempts;
-    $this->_disposition = $result->result->actions->disposition;
-    $this->_confidence = $result->result->actions->confidence;
-    $this->_interpretation = $result->result->actions->interpretation;
-    $this->_utterance = $result->result->actions->utterance;
-    $this->_value = $result->result->actions->value;
-    $this->_concept = isset($result->result->actions->concept) ? $result->result->actions->concept : null;
-    $this->_transcription = isset($result->result->transcription) ? $result->result->transcription : null;
+    $this->_calledid = $result->result->calledid;
+    $this->_userType = isset($result->result->userType) ? $result->result->userType : null;
+    $this->_actions = isset($result->result->actions) ? $result->result->actions : null;
+    // $this->_name = $result->result->actions->name;
+    // $this->_attempts = $result->result->actions->attempts;
+    // $this->_disposition = $result->result->actions->disposition;
+    // $this->_confidence = $result->result->actions->confidence;
+    // $this->_interpretation = $result->result->actions->interpretation;
+    // $this->_utterance = $result->result->actions->utterance;
+    // $this->_value = $result->result->actions->value;
+    // $this->_concept = isset($result->result->actions->concept) ? $result->result->actions->concept : null;
+    // $this->_transcription = isset($result->result->transcription) ? $result->result->transcription : null;
   }
 
   public function getSessionId() {
@@ -1823,6 +1825,10 @@ class Result {
     return $this->_error;
   }
 
+  public function getCalledid() {
+    return $this->_calledid;
+  }
+
   public function getUserType() {
     return $this->_userType;
   }
@@ -1831,40 +1837,64 @@ class Result {
     return $this->_actions;
   }
 
-  public function getName() {
-    return $this->_name;
+  public function getName($action) {
+    return isset($action->name) ? $action->name : null;
   }
 
-  public function getAttempts() {
-    return $this->_attempts;
+  public function getAttempts($action) {
+    return isset($action->attempts) ? $action->attempts : null;
   }
 
-  public function getDisposition() {
-    return $this->_disposition;
+  public function getDisposition($action) {
+    return isset($action->disposition) ? $action->disposition : null;
   }
 
-  public function getConfidence() {
-    return $this->_confidence;
+  public function getConfidence($action) {
+    return isset($action->confidence) ? $action->confidence : null;
   }
 
-  public function getInterpretation() {
-    return $this->_interpretation;
+  public function getInterpretation($action) {
+    return isset($action->interpretation) ? $action->interpretation : null;
   }
 
-  public function getConcept() {
-    return $this->_concept;
+  public function getUtterance($action) {
+    return isset($action->utterance) ? $action->utterance : null;
   }
 
-  public function getUtterance() {
-    return $this->_utterance;
+  public function getValue($action) {
+    return isset($action->value) ? $action->value : null;
   }
 
-  public function getValue() {
-    return $this->_value;
+  public function getConcept($action) {
+    return isset($action->concept) ? $action->concept : null;
   }
 
-  public function getTranscription() {
-    return $this->_transcription;
+  public function getXml($action) {
+    return isset($action->xml) ? $action->xml : null;
+  }
+
+  public function getUploadStatus($action) {
+    return isset($action->uploadStatus) ? $action->uploadStatus : null;
+  }
+
+  public function getDuration($action) {
+    return isset($action->duration) ? $action->duration : null;
+  }
+
+  public function getConnectedDuration($action) {
+    return isset($action->connectedDuration) ? $action->connectedDuration : null;
+  }
+
+  public function getUrl($action) {
+    return isset($action->url) ? $action->url : null;
+  }
+
+  public function getActionUserType($action) {
+    return isset($action->userType) ? $action->userType : null;
+  }
+
+  public function getTranscription($action) {
+    return isset($action->transcription) ? $action->transcription : null;
   }
 }
 
