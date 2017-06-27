@@ -765,10 +765,24 @@ class Tropo extends BaseClass {
   * @see https://www.tropo.com/docs/webapi/wait.htm
   */
   public function wait($wait) {
-     if (!is_object($wait) && is_array($wait)){
-        $params = $wait;
-        $signal = isset($params['allowSignals']) ? $params['allowSignals'] : null;
-        $wait = new Wait($params["milliseconds"], $signal);
+    if ($wait instanceof Wait) {
+
+      if(null === $wait->getMilliseconds()) {
+        throw new Exception("Missing required property: 'milliseconds'");
+      }
+
+    } elseif(is_array($wait)) {
+
+      $params = $wait;
+      if (!array_key_exists("milliseconds", $params)) {
+        throw new Exception("Missing required property: 'milliseconds'");
+      }
+      $signal = isset($params['allowSignals']) ? $params['allowSignals'] : null;
+      $wait = new Wait($params["milliseconds"], $signal);
+    } else {
+
+      throw new Exception("Argument 1 passed to Tropo::wait() must be a array or an instance of Wait.");
+
     }
     $this->wait = sprintf('%s', $wait);
     
@@ -2447,6 +2461,10 @@ class Wait extends BaseClass {
   private $_milliseconds;
   private $_allowSignals;
 
+  public function getMilliseconds() {
+    return $this->_milliseconds;
+  }
+
   /**
   * Class constructor
   *
@@ -2454,6 +2472,9 @@ class Wait extends BaseClass {
   * @param string|array $allowSignals
   */
   public function __construct($milliseconds, $allowSignals=NULL) {
+    if(!isset($milliseconds)) {
+      throw new Exception("Missing required property: 'milliseconds'");
+    }
     $this->_milliseconds = $milliseconds;
     $this->_allowSignals = $allowSignals;
   }
