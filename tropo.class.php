@@ -571,32 +571,64 @@ class Tropo extends BaseClass {
   * @see https://www.tropo.com/docs/webapi/say.htm
   */
   public function say($say, Array $params=NULL) {
-    if(!is_object($say)) {
-      if(!$say) {
+    if ($say instanceof Say) {
+
+      if(!(is_string($say->getValue()) && ($say->getValue() != ''))) {
+
         throw new Exception("Missing required property: 'value'");
+
       }
-      $p = array('as', 'event','voice', 'allowSignals', 'name', 'required', 'promptLogSecurity');
-      $value = $say;
-      foreach ($p as $option) {
-        $$option = null;
-        if (is_array($params) && array_key_exists($option, $params)) {
-          $$option = $params[$option];
-        }
-      }
-      if(!$name) {
+      if(!(is_string($say->getName()) && ($say->getName() != ''))) {
+
         throw new Exception("Missing required property: 'name'");
+
       }
-      $voice = isset($voice) ? $voice : $this->_voice;
-      $event = null;
-      $say = new Say($value, $as, $event, $voice, $allowSignals, $name, $required, $promptLogSecurity);
-    } else {
+
       $say->setEvent(null);
-      if(!($say->getValue())) {
-        throw new Exception("Missing required property: 'value'");
+
+    } elseif (is_string($say) && ($say != '')) {
+
+      if (isset($params) && is_array($params)) {
+
+        if (array_key_exists('name', $params)) {
+
+          if (is_string($params['name']) && ($params['name'] != '')) {
+
+            $name = $params['name'];
+
+          } else {
+
+            throw new Exception("Required property: 'name' must be a string.");
+
+          }
+
+          $p = array('as', 'event','voice', 'allowSignals', 'required', 'promptLogSecurity');
+          $value = $say;
+          foreach ($p as $option) {
+            $$option = null;
+            if (array_key_exists($option, $params)) {
+              $$option = $params[$option];
+            }
+          }
+          $voice = isset($voice) ? $voice : $this->_voice;
+          $event = null;
+          $say = new Say($value, $as, $event, $voice, $allowSignals, $name, $required, $promptLogSecurity);
+
+        } else {
+
+          throw new Exception("Missing required property: 'name'");
+
+        }
+
+      } else {
+
+        throw new Exception("When Argument 1 passed to Tropo::say() is a string, argument 2 passed to Tropo::say() must be of the type array.");
+
       }
-      if(!($say->getName())) {
-        throw new Exception("Missing required property: 'name'");
-      }
+    } else {
+
+      throw new Exception("Argument 1 passed to Tropo::say() must be a string or an instance of Say.");
+
     }
     $this->say = array(sprintf('%s', $say));
   }
@@ -2090,7 +2122,7 @@ class Say extends BaseClass {
   * @param string|array $allowSignals
   */
   public function __construct($value, $as=NULL, $event=NULL, $voice=NULL, $allowSignals=NULL, $name=NULL, $required=NULL, $promptLogSecurity=NULL) {
-    if(!$value) {
+    if(!(is_string($value) && ($value != ''))) {
       throw new Exception("Missing required property: 'value'");
     }
     $this->_value = $value;
@@ -2116,7 +2148,7 @@ class Say extends BaseClass {
     if(isset($this->_name)) { $this->name = $this->_name; }
     if(isset($this->_required)) { $this->required = $this->_required; }
     if(isset($this->_promptLogSecurity)) { $this->promptLogSecurity = $this->_promptLogSecurity; }
-    return $this->unescapeJSON(json_encode($this));
+    return json_encode($this);
   }
 }
 

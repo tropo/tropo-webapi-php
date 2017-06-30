@@ -95,7 +95,7 @@ class SayTest extends TestCase
 		try{
 			@ $tropo->say();
 		} catch (Exception $e) {
-			$this->assertEquals($e->getMessage(), "Missing required property: 'value'");
+			$this->assertEquals($e->getMessage(), "Argument 1 passed to Tropo::say() must be a string or an instance of Say.");
 		}
 	}
 
@@ -105,7 +105,7 @@ class SayTest extends TestCase
 		try{
 			@ $tropo->say(null);
 		} catch (Exception $e) {
-			$this->assertEquals($e->getMessage(), "Missing required property: 'value'");
+			$this->assertEquals($e->getMessage(), "Argument 1 passed to Tropo::say() must be a string or an instance of Say.");
 		}
 	}
 
@@ -115,7 +115,7 @@ class SayTest extends TestCase
 		try{
 			@ $tropo->say("");
 		} catch (Exception $e) {
-			$this->assertEquals($e->getMessage(), "Missing required property: 'value'");
+			$this->assertEquals($e->getMessage(), "Argument 1 passed to Tropo::say() must be a string or an instance of Say.");
 		}
 	}
 
@@ -125,7 +125,7 @@ class SayTest extends TestCase
 		try{
 			$tropo->say("Please enter your account number...");
 		} catch (Exception $e) {
-			$this->assertEquals($e->getMessage(), "Missing required property: 'name'");
+			$this->assertEquals($e->getMessage(), "When Argument 1 passed to Tropo::say() is a string, argument 2 passed to Tropo::say() must be of the type array.");
 		}
 	}
 
@@ -136,7 +136,7 @@ class SayTest extends TestCase
 		try{
 			$tropo->say("Please enter your account number...",$params);
 		} catch (Exception $e) {
-			$this->assertEquals($e->getMessage(), "Missing required property: 'name'");
+			$this->assertEquals($e->getMessage(), "Required property: 'name' must be a string.");
 		}
 	}
 
@@ -147,7 +147,7 @@ class SayTest extends TestCase
 		try{
 			$tropo->say("Please enter your account number...",$params);
 		} catch (Exception $e) {
-			$this->assertEquals($e->getMessage(), "Missing required property: 'name'");
+			$this->assertEquals($e->getMessage(), "Required property: 'name' must be a string.");
 		}
 	}
 }
