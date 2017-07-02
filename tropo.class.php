@@ -387,28 +387,85 @@ class Tropo extends BaseClass {
   * @see https://www.tropo.com/docs/webapi/on.htm
   */
   public function on($on) {
-    if (!is_object($on))	{
-      if (is_array($on)) {
-        $params = $on;
-        if (!$params["event"]) {
-          throw new Exception("Missing required property: 'event'");
-        }
-        if (!$params["say"]) {
-          throw new Exception("Missing required property: 'say'");
-        }
-        if (!is_object($params["say"])) {
-          throw new Exception("Property 'say' must be a Say object");
-        }
-        $next = (array_key_exists('next', $params)) ? $params["next"] : null;
-        $on = new On($params["event"], $next, $params["say"]);
-      }
-    } else {
-      if(!($on->getEvent())) {
+    if ($on instanceof On) {
+
+      if(!(is_string($on->getEvent()) && ($on->getEvent() != ''))) {
         throw new Exception("Missing required property: 'event'");
       }
-      if(!($on->getSay())) {
+      if(null === $on->getSay()) {
         throw new Exception("Missing required property: 'say'");
       }
+
+    } elseif (is_array($on)) {
+
+      if (array_key_exists('event', $on)) {
+
+        if (is_string($on['event']) && ($on['event'] != '')) {
+
+          $event = $on['event'];
+
+        } else {
+
+        throw new Exception("Required property: 'event' must be a string.");
+
+        }
+      } else {
+
+        throw new Exception("Missing required property: 'event'");
+
+      }
+
+      if (array_key_exists('say', $on)) {
+
+        if ($on['say'] instanceof Say) {
+
+          if(!(is_string($on['say']->getValue()) && ($on['say']->getValue() != ''))) {
+
+            throw new Exception("The value of say must be a string.");
+
+          } else {
+
+            $say = $on['say'];
+          }
+
+        } elseif (is_array($on['say'])) {
+
+          foreach ($on['say'] as $value) {
+            
+            if ($value instanceof Say) {
+
+              if(!(is_string($value->getValue()) && ($value->getValue() != ''))) {
+
+                throw new Exception("The value of say must be a string.");
+
+              }
+              
+            } else {
+
+              throw new Exception("Required property: 'say' must be a Say of array or an instance of Say.");
+
+            }
+          }
+
+          $say = $on['say'];
+
+        } else {
+
+          throw new Exception("Required property: 'say' must be a Say of array or an instance of Say.");
+        }
+      } else {
+
+        throw new Exception("Missing required property: 'say'");
+
+      }
+
+      $next = (array_key_exists('next', $on)) ? $on["next"] : null;
+      //$event, $next=NULL, Say $say=NULL, $voice=Null, Ask $ask=NULL, Message $message=NULL, Wait $wait=NULL, $order=NULL, $post=NULL
+      $on = new On($event, $next, $say);
+    } else {
+
+      throw new Exception("Argument 1 passed to Tropo::on() must be a array or an instance of On.");
+      
     }
     $this->on = array(sprintf('%s', $on));
   }
@@ -1634,13 +1691,29 @@ class On extends BaseClass {
   * @param Say $say
   * @param string $voice
   */
-  public function __construct($event, $next=NULL, Say $say=NULL, Ask $ask=NULL, $post=NULL) {
-    if(!$event) {
+  public function __construct($event, $next=NULL, $say=NULL, $voice=Null, Ask $ask=NULL, Message $message=NULL, Wait $wait=NULL, $order=NULL, $post=NULL) {
+    if(!(is_string($event) && ($event != ''))) {
       throw new Exception("Missing required property: 'event'");
     }
     $this->_event = $event;
     $this->_next = $next;
-    $this->_say = isset($say) ? sprintf('%s', $say) : null ;
+    if (isset($say)) {
+      if ($say instanceof Say) {
+        $this->_say = sprintf('%s', $say);
+      } elseif (is_array($say)) {
+        foreach ($say as $key => $value) {
+          $this->_say[$key] = sprintf('%s', $value);
+        }
+        foreach ($this->_say as $key => $value) {
+          $this->_say[$key] = json_decode($value);
+        }
+        $this->_say = json_encode($this->_say);
+      } else {
+        $this->_say = null;
+      }
+    } else {
+      $this->_say = null;
+    }
     $this->_ask = isset($ask) ? sprintf('%s', $ask) : null;
     $this->_post = $post;
   }
@@ -1652,10 +1725,10 @@ class On extends BaseClass {
   public function __toString() {
     if(isset($this->_event)) { $this->event = $this->_event; }
     if(isset($this->_next)) { $this->next = $this->_next; }
-    if(isset($this->_say)) { $this->say = $this->_say; }
+    if(isset($this->_say)) { $this->say = json_decode($this->_say); }
     if(isset($this->_ask)) { $this->ask = $this->_ask; }
     if(isset($this->_post)) { $this->post = $this->_post; }
-    return $this->unescapeJSON(json_encode($this));
+    return json_encode($this);
   }
 }
 
