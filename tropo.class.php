@@ -1244,11 +1244,26 @@ class Ask extends BaseClass {
     }
     $this->_attempts = $attempts;
     $this->_bargein = $bargein;
-    $this->_choices = isset($choices) ? sprintf('%s', $choices) : null ;
+    $this->_choices = sprintf('%s', $choices);
     $this->_minConfidence = $minConfidence;
     $this->_name = $name;
     $this->_required = $required;
-    $this->_say = isset($say) ? $say : null;
+    if ($say instanceof Say) {
+      $this->_say = sprintf('%s', $say);
+    } elseif (is_array($say)) {
+      foreach ($say as $key => $value) {
+        if (!($value instanceof Say)) {
+          throw new Exception("Required property: 'say' must be an instance of Say or a Say of array.");
+        }
+        $this->_say[$key] = sprintf('%s', $value);
+      }
+      foreach ($this->_say as $key => $value) {
+        $this->_say[$key] = json_decode($value);
+      }
+      $this->_say = json_encode($this->_say);
+    } else {
+      throw new Exception("Required property: 'say' must be an instance of Say or a Say of array.");
+    }
     $this->_timeout = $timeout;
     $this->_voice = $voice;
     $this->_allowSignals = $allowSignals;
@@ -1269,16 +1284,11 @@ class Ask extends BaseClass {
   public function __toString() {
     if(isset($this->_attempts)) { $this->attempts = $this->_attempts; }
     if(isset($this->_bargein)) { $this->bargein = $this->_bargein; }
-    if(isset($this->_choices)) { $this->choices = $this->_choices; }
+    if(isset($this->_choices)) { $this->choices = json_decode($this->_choices); }
     if(isset($this->_minConfidence)) { $this->minConfidence = $this->_minConfidence; }
     if(isset($this->_name)) { $this->name = $this->_name; }
     if(isset($this->_required)) { $this->required = $this->_required; }
-    if(isset($this->_say)) { $this->say = $this->_say; }
-    if (is_array($this->_say)) {
-      foreach ($this->_say as $k => $v) {
-        $this->_say[$k] = sprintf('%s', $v);
-      }
-    }
+    if(isset($this->_say)) { $this->say = json_decode($this->_say); }
     if(isset($this->_timeout)) { $this->timeout = $this->_timeout; }
     if(isset($this->_voice)) { $this->voice = $this->_voice; }
     if(isset($this->_allowSignals)) { $this->allowSignals = $this->_allowSignals; }
@@ -1290,7 +1300,7 @@ class Ask extends BaseClass {
     if(isset($this->_promptLogSecurity)) { $this->promptLogSecurity = $this->_promptLogSecurity; }
     if(isset($this->_asrLogSecurity)) { $this->asrLogSecurity = $this->_asrLogSecurity; }
     if(isset($this->_maskTemplate)) { $this->maskTemplate = $this->_maskTemplate; }
-    return $this->unescapeJSON(json_encode($this));
+    return json_encode($this);
   }
 
   /**
@@ -1450,7 +1460,7 @@ class Choices extends BaseClass {
     if(isset($this->_value)){ $this->value = $this->_value; }
     if(isset($this->_mode)) { $this->mode = $this->_mode; }
     if(isset($this->_terminator)) { $this->terminator = $this->_terminator; }
-    return $this->unescapeJSON(json_encode($this));
+    return json_encode($this);
   }
 }
 
@@ -1702,6 +1712,9 @@ class On extends BaseClass {
         $this->_say = sprintf('%s', $say);
       } elseif (is_array($say)) {
         foreach ($say as $key => $value) {
+          if (!($value instanceof Say)) {
+            throw new Exception("Required property: 'say' must be a Say of array or an instance of Say.");
+          }
           $this->_say[$key] = sprintf('%s', $value);
         }
         foreach ($this->_say as $key => $value) {
