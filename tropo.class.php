@@ -312,6 +312,19 @@ class Tropo extends BaseClass {
       if(null === $message->getName()) {
         throw new Exception("Missing required property: 'name'");
       }
+      if (is_string($message->getTo()) && ($message->getTo() != '')) {
+      } elseif (is_array($message->getTo())) {
+        foreach ($message->getTo() as $value) {
+          if (!(is_string($value) && ($value != ''))) {
+            throw new Exception("Required property: 'to' must be a string or a string of array.");
+          }
+        }
+      } else {
+        throw new Exception("Required property: 'to' must be a string or a string of array.");
+      }
+      if(!(is_string($message->getName()) && ($message->getName() != ''))) {
+        throw new Exception("Required property: 'name' must be a string.");
+      }
     } elseif (is_string($message) && ($message!=='')) {
 
       if (isset($params) && is_array($params)) {
@@ -368,7 +381,7 @@ class Tropo extends BaseClass {
             $$option = $params[$option];
           }
         }
-        $message = new Message($say, $to, $name, $channel, $network, $from, $voice, $timeout, $answerOnMedia, $headers, $required, $promptLogSecurity);
+        $message = new Message($say, $to, $channel, $network, $from, $voice, $timeout, $answerOnMedia, $headers, $name, $required, $promptLogSecurity);
       } else {
         throw new Exception("When Argument 1 passed to Tropo::message() is a string, argument 2 passed to Tropo::message() must be of the type array.");
       }
@@ -1618,7 +1631,8 @@ class Message extends BaseClass {
   * @param boolean $answerOnMedia
   * @param array $headers
   */
-  public function __construct($say, $to, $name, $channel=null, $network=null, $from=null, $voice=null, $timeout=null, $answerOnMedia=null, Array $headers=null, $required=null, $promptLogSecurity=null) {
+  //                      Say $say, $to, $channel=null, $network=null, $from=null, $voice=null, $timeout=null, $answerOnMedia=null, Array $headers=null
+  public function __construct($say, $to, $channel=null, $network=null, $from=null, $voice=null, $timeout=null, $answerOnMedia=null, Array $headers=null, $name, $required=null, $promptLogSecurity=null) {
     if(!isset($say)) {
       throw new Exception("Missing required property: 'say'");
     }
@@ -1630,11 +1644,37 @@ class Message extends BaseClass {
     }
     if ($say instanceof Say) {
       $this->_say = sprintf('%s', $say);
+    } elseif (is_array($say)) {
+      foreach ($say as $key => $value) {
+        if (!($value instanceof Say)) {
+          throw new Exception("Required property: 'say' must be an instance of Say or a Say of array.");
+        }
+        $this->_say[$key] = sprintf('%s', $value);
+      }
+      foreach ($this->_say as $key => $value) {
+        $this->_say[$key] = json_decode($value);
+      }
+      $this->_say = json_encode($this->_say);
     } else {
-      $this->_say = $say;
+      throw new Exception("Required property: 'say' must be an instance of Say or a Say of array.");
     }
-    $this->_to = $to;
-    $this->_name = $name;
+    if (is_string($to) && ($to != '')) {
+      $this->_to = $to;
+    } elseif (is_array($to)) {
+      foreach ($to as $value) {
+        if (!(is_string($value) && ($value != ''))) {
+          throw new Exception("Required property: 'to' must be a string or a string of array.");
+        }
+      }
+      $this->_to = $to;
+    } else {
+      throw new Exception("Required property: 'to' must be a string or a string of array.");
+    }
+    if (is_string($name) && ($name != '')) {
+      $this->_name = $name;
+    } else {
+      throw new Exception("Required property: 'name' must be a string.");
+    }
     $this->_channel = $channel;
     $this->_network = $network;
     $this->_from = $from;
@@ -1651,12 +1691,7 @@ class Message extends BaseClass {
   *
   */
   public function __toString() {
-    $this->say = $this->_say;
-    if (is_array($this->_say)) {
-      foreach ($this->_say as $k => $v) {
-        $this->_say[$k] = sprintf('%s', $v);
-      }
-    }
+    if(isset($this->_say)) { $this->say = json_decode($this->_say); }
     $this->to = $this->_to;
     $this->name = $this->_name;
     if(isset($this->_channel)) { $this->channel = $this->_channel; }
@@ -1668,7 +1703,7 @@ class Message extends BaseClass {
     if(count($this->_headers)) { $this->headers = $this->_headers; }
     if(count($this->_required)) { $this->required = $this->_required; }
     if(count($this->_promptLogSecurity)) { $this->promptLogSecurity = $this->_promptLogSecurity; }
-    return $this->unescapeJSON(json_encode($this));
+    return json_encode($this);
   }
 }
 

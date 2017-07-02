@@ -52,7 +52,7 @@ class MessageTest extends PHPUnit_Framework_TestCase
 
     public function testCreateMinObject() {
       $tropo = new Tropo();
-      $message = new Message(new Say("This is an announcement."), "sip:pengxli@192.168.26.1:5678", "foo");
+      $message = new Message(new Say("This is an announcement."), "sip:pengxli@192.168.26.1:5678", null, null, null, null, null, null, null, "foo");
       $tropo->message($message);
       $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":{"value":"This is an announcement."},"to":"sip:pengxli@192.168.26.1:5678","name":"foo"}}]}');
     }
@@ -63,7 +63,7 @@ class MessageTest extends PHPUnit_Framework_TestCase
         new Say("This is an announcement."),
         new Say("Remember, you have a meeting at 2 PM.")
         );
-      $message = new Message($say, "sip:pengxli@192.168.26.1:5678", "foo");
+      $message = new Message($say, "sip:pengxli@192.168.26.1:5678", null, null, null, null, null, null, null, "foo");
       $tropo->message($message);
       $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":[{"value":"This is an announcement."},{"value":"Remember, you have a meeting at 2 PM."}],"to":"sip:pengxli@192.168.26.1:5678","name":"foo"}}]}');
     }
@@ -80,7 +80,7 @@ class MessageTest extends PHPUnit_Framework_TestCase
         'sip:pengxli@172.16.72.131:5678'
         );
       $headers = array('foo' => 'bar', 'bling' => 'baz');
-      $message = new Message($say, $to, "foo", Channel::$voice, Network::$sip, "3055551000", Voice::$US_English_female_allison, 60, false, $headers, true, "suppress");
+      $message = new Message($say, $to, Channel::$voice, Network::$sip, "3055551000", Voice::$US_English_female_allison, 60, false, $headers, "foo", true, "suppress");
       $tropo->message($message);
       $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":[{"value":"This is an announcement."},{"value":"Remember, you have a meeting at 2 PM."},{"value":"This is tropo.com."}],"to":["sip:pengxli@192.168.26.1:5678","sip:pengxli@172.16.72.131:5678"],"name":"foo","channel":"VOICE","network":"SIP","from":"3055551000","voice":"allison","timeout":60,"answerOnMedia":false,"headers":{"foo":"bar","bling":"baz"},"required":true,"promptLogSecurity":"suppress"}}]}');
     }
