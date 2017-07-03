@@ -258,6 +258,12 @@ class Tropo extends BaseClass {
       if(null === $conference->getName()) {
         throw new Exception("Missing required property: 'name'");
       }
+      if (!(is_string($conference->getName()) && ($conference->getName() != ''))) {
+        throw new Exception("Required property: 'name' must be a string.");
+      }
+      if (!(is_string($conference->getId()) && ($conference->getId() != ''))) {
+        throw new Exception("Required property: 'id' must be a string.");
+      }
 
     } elseif (is_string($conference) && ($conference !== '')) {
 
@@ -1552,6 +1558,12 @@ class Conference extends BaseClass {
     if(!isset($id)) {
       throw new Exception("Missing required property: 'id'");
     }
+    if (!(is_string($name) && ($name != ''))) {
+      throw new Exception("Required property: 'name' must be a string.");
+    }
+    if (!(is_string($id) && ($id != ''))) {
+      throw new Exception("Required property: 'id' must be a string.");
+    }
     $this->_name = $name;
     $this->_id = (string) $id;
     $this->_mute = $mute;
@@ -1599,7 +1611,7 @@ class Conference extends BaseClass {
         }
       }
     }
-    return $this->unescapeJSON(json_encode($this));
+    return json_encode($this);
   }
 }
 
