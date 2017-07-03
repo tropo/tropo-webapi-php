@@ -519,10 +519,28 @@ class Tropo extends BaseClass {
       if(null === $record->getName()) {
         throw new Exception("Missing required property: 'name'");
       }
+      if (!(is_string($record->getUrl()) && ($record->getUrl() != ''))) {
+        throw new Exception("Required property: 'url' must be a string.");
+      }
+      if (!(is_string($record->getName()) && ($record->getName() != ''))) {
+        throw new Exception("Required property: 'name' must be a string.");
+      }
 
     } elseif (is_array($record)) {
 
       $params = $record;
+      if (!array_key_exists('url', $params)) {
+        throw new Exception("Missing required property: 'url'");
+      }
+      if (!array_key_exists('name', $params)) {
+        throw new Exception("Missing required property: 'name'");
+      }
+      if (!(is_string($params['url']) && ($params['url'] != ''))) {
+        throw new Exception("Required property: 'url' must be a string.");
+      }
+      if (!(is_string($params['name']) && ($params['name'] != ''))) {
+        throw new Exception("Required property: 'name' must be a string.");
+      }
       $p = array('voice', 'emailFormat', 'transcription', 'terminator');
       foreach ($p as $option) {
         $params[$option] = array_key_exists($option, $params) ? $params[$option] : null;
@@ -1882,6 +1900,12 @@ class Record extends BaseClass {
     if(!isset($name)) {
       throw new Exception("Missing required property: 'name'");
     }
+    if (!(is_string($url) && ($url != ''))) {
+      throw new Exception("Required property: 'url' must be a string.");
+    }
+    if (!(is_string($name) && ($name != ''))) {
+      throw new Exception("Required property: 'name' must be a string.");
+    }
     $this->_attempts = $attempts;
     $this->_allowSignals = $allowSignals;
     $this->_bargein = $bargein;
@@ -1893,10 +1917,23 @@ class Record extends BaseClass {
     $this->_method = $method;
     $this->_password = $password;
     $this->_required = $required;
-    if ($say instanceof Say) {
-      $this->_say = sprintf('%s', $say);
-    } else {
-      $this->_say = $say;
+    if (isset($say)) {
+      if ($say instanceof Say) {
+        $this->_say = sprintf('%s', $say);
+      } elseif (is_array($say)) {
+        foreach ($say as $key => $value) {
+          if (!($value instanceof Say)) {
+            throw new Exception("Property: 'say' must be an instance of Say or a Say of array.");
+          }
+          $this->_say[$key] = sprintf('%s', $value);
+        }
+        foreach ($this->_say as $key => $value) {
+          $this->_say[$key] = json_decode($value);
+        }
+        $this->_say = json_encode($this->_say);
+      } else {
+        throw new Exception("Property: 'say' must be an instance of Say or a Say of array.");
+      }
     }
     $this->_timeout = $timeout;
     $this->_transcription = isset($transcription) ? sprintf('%s', $transcription) : null;
@@ -1918,21 +1955,16 @@ class Record extends BaseClass {
     if(isset($this->_allowSignals)) { $this->allowSignals = $this->_allowSignals; }
     if(isset($this->_bargein)) { $this->bargein = $this->_bargein; }
     if(isset($this->_beep)) { $this->beep = $this->_beep; }
-    if(isset($this->_choices)) { $this->choices = $this->_choices; }
+    if(isset($this->_choices)) { $this->choices = json_decode($this->_choices); }
     if(isset($this->_format)) { $this->format = $this->_format; }
     if(isset($this->_maxSilence)) { $this->maxSilence = $this->_maxSilence; }
     if(isset($this->_maxTime)) { $this->maxTime = $this->_maxTime; }
     if(isset($this->_method)) { $this->method = $this->_method; }
     if(isset($this->_password)) { $this->password = $this->_password; }
     if(isset($this->_required)) { $this->required = $this->_required; }
-    if(isset($this->_say)) { $this->say = $this->_say; }
-    if (is_array($this->_say)) {
-      foreach ($this->_say as $k => $v) {
-        $this->_say[$k] = sprintf('%s', $v);
-      }
-    }
+    if(isset($this->_say)) { $this->say = json_decode($this->_say); }
     if(isset($this->_timeout)) { $this->timeout = $this->_timeout; }
-    if(isset($this->_transcription)) { $this->transcription = $this->_transcription; }
+    if(isset($this->_transcription)) { $this->transcription = json_decode($this->_transcription); }
     if(isset($this->_username)) { $this->username = $this->_username; }
     if(isset($this->_url)) { $this->url = $this->_url; }
     if(isset($this->_voice)) { $this->voice = $this->_voice; }
@@ -1940,7 +1972,7 @@ class Record extends BaseClass {
     if(isset($this->_asyncUpload)) { $this->asyncUpload = $this->_asyncUpload; }
     if(isset($this->_name)) { $this->name = $this->_name; }
     if(isset($this->_promptLogSecurity)) { $this->promptLogSecurity = $this->_promptLogSecurity; }
-    return $this->unescapeJSON(json_encode($this));
+    return json_encode($this);
   }
 }
 
@@ -2588,7 +2620,7 @@ class Transcription extends BaseClass {
     if(isset($this->_id)) { $this->id = $this->_id; }
     if(isset($this->_url)) { $this->url = $this->_url; }
     if(isset($this->_emailFormat)) { $this->emailFormat = $this->_emailFormat; }
-    return $this->unescapeJSON(json_encode($this));
+    return json_encode($this);
   }
 }
 
