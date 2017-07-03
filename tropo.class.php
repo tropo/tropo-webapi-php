@@ -803,6 +803,19 @@ class Tropo extends BaseClass {
       if(null === $transfer->getName()) {
         throw new Exception("Missing required property: 'name'");
       }
+      if (is_string($transfer->getTo()) && ($transfer->getTo() != '')) {
+      } elseif (is_array($transfer->getTo())) {
+        foreach ($transfer->getTo() as $value) {
+          if (!(is_string($value) && ($value != ''))) {
+            throw new Exception("Required property: 'to' must be a string or a string of array.");
+          }
+        }
+      } else {
+        throw new Exception("Required property: 'to' must be a string or a string of array.");
+      }
+      if (!(is_string($transfer->getName()) && ($transfer->getName() != ''))) {
+        throw new Exception("Required property: 'to' must be a string.");
+      }
 
     } elseif (is_array($transfer) || (is_string($transfer) && ($transfer !== ''))) {//$transfer is a non-empty string or a non-empty string of array
 
@@ -1828,7 +1841,7 @@ class On extends BaseClass {
     if(isset($this->_event)) { $this->event = $this->_event; }
     if(isset($this->_next)) { $this->next = $this->_next; }
     if(isset($this->_say)) { $this->say = json_decode($this->_say); }
-    if(isset($this->_ask)) { $this->ask = $this->_ask; }
+    if(isset($this->_ask)) { $this->ask = json_decode($this->_ask); }
     if(isset($this->_post)) { $this->post = $this->_post; }
     return json_encode($this);
   }
@@ -2677,6 +2690,19 @@ class Transfer extends BaseClass {
     if(!isset($name)) {
       throw new Exception("Missing required property: 'name'");
     }
+    if (is_string($to) && ($to != '')) {
+    } elseif (is_array($to)) {
+      foreach ($to as $value) {
+        if (!(is_string($value) && ($value != ''))) {
+          throw new Exception("Required property: 'to' must be a string or a string of array.");
+        }
+      }
+    } else {
+      throw new Exception("Required property: 'to' must be a string or a string of array.");
+    }
+    if (!(is_string($name) && ($name != ''))) {
+      throw new Exception("Required property: 'name' must be a string.");
+    }
     $this->_to = $to;
     $this->_answerOnMedia = $answerOnMedia;
     $this->_choices = isset($choices) ? sprintf('%s', $choices) : null;
@@ -2687,8 +2713,19 @@ class Transfer extends BaseClass {
     if (isset($on)) {
       if ($on instanceof On) {
         $this->_on = sprintf('%s', $on);
+      } elseif (is_array($on)) {
+        foreach ($on as $key => $value) {
+          if (!($value instanceof On)) {
+            throw new Exception("Property: 'on' must be a On of array or an instance of On.");
+          }
+          $this->_on[$key] = sprintf('%s', $value);
+        }
+        foreach ($this->_on as $key => $value) {
+          $this->_on[$key] = json_decode($value);
+        }
+        $this->_on = json_encode($this->_on);
       } else {
-        $this->_on = $on;
+        $this->_on = null;
       }
     }
     $this->_allowSignals = $allowSignals;
@@ -2711,16 +2748,11 @@ class Transfer extends BaseClass {
   public function __toString() {
     $this->to = $this->_to;
     if(isset($this->_answerOnMedia)) { $this->answerOnMedia = $this->_answerOnMedia; }
-    if(isset($this->_choices)) { $this->choices = $this->_choices; }
+    if(isset($this->_choices)) { $this->choices = json_decode($this->_choices); }
     if(isset($this->_from)) { $this->from = $this->_from; }
     if(isset($this->_ringRepeat)) { $this->ringRepeat = $this->_ringRepeat; }
     if(isset($this->_timeout)) { $this->timeout = $this->_timeout; }
-    if(isset($this->_on)) { $this->on = $this->_on; }
-    if (is_array($this->_on)) {
-      foreach ($this->_on as $k => $v) {
-        $this->_on[$k] = sprintf('%s', $v);
-      }
-    }
+    if(isset($this->_on)) { $this->on = json_decode($this->_on); }
     if(isset($this->_allowSignals)) { $this->allowSignals = $this->_allowSignals; }
     if(count($this->_headers)) { $this->headers = $this->_headers; }
     if(isset($this->_machineDetection)) {
@@ -2741,7 +2773,7 @@ class Transfer extends BaseClass {
     if(isset($this->_callbackUrl)) { $this->callbackUrl = $this->_callbackUrl; }
     if(isset($this->_promptLogSecurity)) { $this->promptLogSecurity = $this->_promptLogSecurity; }
     if(isset($this->_label)) { $this->label = $this->_label; }
-    return $this->unescapeJSON(json_encode($this));
+    return json_encode($this);
   }
 }
 
