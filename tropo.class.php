@@ -751,11 +751,17 @@ class Tropo extends BaseClass {
       if(null === $startRecording->getUrl()) {
         throw new Exception("Missing required property: 'url'");
       }
+      if (!(is_string($startRecording->getUrl()) && ($startRecording->getUrl() != ''))) {
+        throw new Exception("Required property: 'url' must be a string.");
+      }
 
     } elseif (is_array($startRecording)) {
 
       if (!array_key_exists('url', $startRecording)) {
         throw new Exception("Missing required property: 'url'");
+      }
+      if (!(is_string($startRecording['url']) && ($startRecording['url'] != ''))) {
+        throw new Exception("Required property: 'url' must be a string.");
       }
 
       $params = $startRecording;
@@ -2565,6 +2571,9 @@ class StartRecording extends BaseClass {
     if(!isset($url)) {
       throw new Exception("Missing required property: 'url'");
     }
+    if (!(is_string($url) && ($url != ''))) {
+      throw new Exception("Required property: 'url' must be a string.");
+    }
     $this->_format = $format;
     $this->_method = $method;
     $this->_password = $password;
@@ -2590,7 +2599,7 @@ class StartRecording extends BaseClass {
     if(isset($this->_transcriptionEmailFormat)) { $this->transcriptionEmailFormat = $this->_transcriptionEmailFormat; }
     if(isset($this->_transcriptionOutURI)) { $this->transcriptionOutURI = $this->_transcriptionOutURI; }
     if(isset($this->_asyncUpload)) { $this->asyncUpload = $this->_asyncUpload; }
-    return $this->unescapeJSON(json_encode($this));
+    return json_encode($this);
   }
 }
 
