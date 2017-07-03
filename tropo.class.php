@@ -619,6 +619,12 @@ class Tropo extends BaseClass {
       if(null === $redirect->getName()) {
         throw new Exception("Missing required property: 'name'");
       }
+      if (!(is_string($redirect->getTo()) && ($redirect->getTo() != ''))) {
+        throw new Exception("Required property: 'to' must be a string.");
+      }
+      if (!(is_string($redirect->getName()) && ($redirect->getName() != ''))) {
+        throw new Exception("Required property: 'name' must be a string.");
+      }
 
     } elseif (is_string($redirect) && ($redirect !== '')) {
 
@@ -2027,6 +2033,12 @@ class Redirect extends BaseClass {
     if(!isset($name)) {
       throw new Exception("Missing required property: 'name'");
     }
+    if (!(is_string($to) && ($to != ''))) {
+      throw new Exception("Required property: 'to' must be a string.");
+    }
+    if (!(is_string($name) && ($name != ''))) {
+      throw new Exception("Required property: 'name' must be a string.");
+    }
     $this->_to = sprintf('%s', $to);
     $this->_name = sprintf('%s', $name);
     $this->_required = $required;
@@ -2040,7 +2052,7 @@ class Redirect extends BaseClass {
     $this->to = $this->_to;
     $this->name = $this->_name;
     if(isset($this->_required)) { $this->required = $this->_required; }
-    return $this->unescapeJSON(json_encode($this));
+    return json_encode($this);
   }
 }
 
@@ -2821,7 +2833,7 @@ class Wait extends BaseClass {
   public function __toString() {
     $this->milliseconds = $this->_milliseconds; 
     if(isset($this->_allowSignals)) { $this->allowSignals = $this->_allowSignals; }
-    return $this->unescapeJSON(json_encode($this));
+    return json_encode($this);
   }
 }
 
