@@ -100,16 +100,6 @@ class OnTest extends TestCase{
 		}
 	}
 
-	public function testFailsOnWithNoSayParameter() {
-		$tropo = new Tropo();
-		try {
-			$on = new On(Event::$continue, "say.php");
-			$tropo->on($on);
-		} catch (Exception $e) {
-			$this->assertEquals($e->getMessage(), "Missing required property: 'say'");
-		}
-	}
-
 	public function testFailsOnWithNoSayParameter1() {
 		$tropo = new Tropo();
 		try {
@@ -119,7 +109,7 @@ class OnTest extends TestCase{
 				);
 			$tropo->on($on);
 		} catch (Exception $e) {
-			$this->assertEquals($e->getMessage(), "Missing required property: 'say'");
+			$this->assertEquals($e->getMessage(), "Property: 'say' must be a Say of array or an instance of Say.");
 		}
 	}
 
@@ -133,7 +123,7 @@ class OnTest extends TestCase{
 				);
 			$tropo->on($on);
 		} catch (Exception $e) {
-			$this->assertEquals($e->getMessage(), "Required property: 'say' must be a Say of array or an instance of Say.");
+			$this->assertEquals($e->getMessage(), "Property: 'say' must be a Say of array or an instance of Say.");
 		}
 	}
 }
