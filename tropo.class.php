@@ -563,7 +563,7 @@ class Tropo extends BaseClass {
       } else {
         $transcription = $params["transcription"];
       }
-      $p = array('attempts', 'allowSignals', 'bargein', 'beep', 'format', 'maxTime', 'maxSilence', 'method', 'password', 'required', 'timeout', 'username', 'url', 'voice', 'minConfidence', 'interdigitTimeout', 'asyncUpload', 'name', 'promptLogSecurity');
+      $p = array('attempts', 'allowSignals', 'bargein', 'beep', 'format', 'maxTime', 'maxSilence', 'method', 'password', 'required', 'timeout', 'username', 'url', 'voice', 'minConfidence', 'interdigitTimeout', 'asyncUpload', 'name', 'promptLogSecurity', 'sensitivity');
       foreach ($p as $option) {
         $$option = null;
         if (is_array($params) && array_key_exists($option, $params)) {
@@ -588,7 +588,7 @@ class Tropo extends BaseClass {
       if (!isset($say)) {
         $say = null;
       }
-      $record = new Record($attempts, $allowSignals, $bargein, $beep, $choices, $format, $maxSilence, $maxTime, $method, $password, $required, $say, $timeout, $transcription, $username, $url, $voice, $minConfidence, $interdigitTimeout, $asyncUpload, $name, $promptLogSecurity);
+      $record = new Record($attempts, $allowSignals, $bargein, $beep, $choices, $format, $maxSilence, $maxTime, $method, $password, $required, $say, $timeout, $transcription, $username, $url, $voice, $minConfidence, $interdigitTimeout, $asyncUpload, $name, $promptLogSecurity, $sensitivity);
       
     } else {
 
@@ -1884,6 +1884,7 @@ class Record extends BaseClass {
   private $_asyncUpload;
   private $_name;
   private $_promptLogSecurity;
+  private $_sensitivity;
 
   public function getUrl() {
     return $this->_url;
@@ -1915,7 +1916,7 @@ class Record extends BaseClass {
   * @param int $minConfidence
   * @param int $interdigitTimeout
   */
-  public function __construct($attempts=NULL, $allowSignals=NULL, $bargein=NULL, $beep=NULL, Choices $choices=NULL, $format=NULL, $maxSilence=NULL, $maxTime=NULL, $method=NULL, $password=NULL, $required=NULL, $say=NULL, $timeout=NULL, Transcription $transcription=NULL, $username=NULL, $url, $voice=NULL, $minConfidence=NULL, $interdigitTimeout=NULL, $asyncUpload=NULL, $name, $promptLogSecurity=NULL) {
+  public function __construct($attempts=NULL, $allowSignals=NULL, $bargein=NULL, $beep=NULL, Choices $choices=NULL, $format=NULL, $maxSilence=NULL, $maxTime=NULL, $method=NULL, $password=NULL, $required=NULL, $say=NULL, $timeout=NULL, Transcription $transcription=NULL, $username=NULL, $url, $voice=NULL, $minConfidence=NULL, $interdigitTimeout=NULL, $asyncUpload=NULL, $name, $promptLogSecurity=NULL, $sensitivity=NULL) {
     if(!isset($url)) {
       throw new Exception("Missing required property: 'url'");
     }
@@ -1966,6 +1967,7 @@ class Record extends BaseClass {
     $this->_asyncUpload = $asyncUpload;
     $this->_name = $name;
     $this->_promptLogSecurity = $promptLogSecurity;
+    $this->_sensitivity = $sensitivity;
   }
 
   /**
@@ -1994,6 +1996,7 @@ class Record extends BaseClass {
     if(isset($this->_asyncUpload)) { $this->asyncUpload = $this->_asyncUpload; }
     if(isset($this->_name)) { $this->name = $this->_name; }
     if(isset($this->_promptLogSecurity)) { $this->promptLogSecurity = $this->_promptLogSecurity; }
+    if(isset($this->_sensitivity)) { $this->sensitivity = $this->_sensitivity; }
     return json_encode($this);
   }
 }
