@@ -1166,7 +1166,7 @@ class Tropo extends BaseClass {
   */
   public function renderJSON() {
     header('Content-type: application/json;charset=utf8');
-    header('WebAPI-Lang-Ver: PHP V15.9.0 SNAPSHOT');
+    header('WebAPI-Lang-Ver: PHP V15.8.0 2017-07-10');
     echo $this;
   }
 
