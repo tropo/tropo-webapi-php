@@ -29,15 +29,6 @@ class SayTest extends TestCase
 		$this->assertEquals(sprintf($tropo), '{"tropo":[{"say":[{"value":"Please enter your account number...","as":"DATE","voice":"allison","allowSignals":["exit","quit"],"name":"say","required":true,"promptLogSecurity":"suppress"}]}]}');
 	}
 
-	public function testFailsSayWithNoValueParameter()
-	{
-		try{
-			@ $say = new Say();
-		} catch (Exception $e) {
-			$this->assertEquals($e->getMessage(), "Missing required property: 'value'");
-		}
-	}
-
 	public function testFailsSayWithNoValueParameter1()
 	{
 		try{
@@ -86,16 +77,6 @@ class SayTest extends TestCase
 			$tropo->say($say);
 		} catch (Exception $e) {
 			$this->assertEquals($e->getMessage(), "Missing required property: 'name'");
-		}
-	}
-
-	public function testFailsSayWithNoValueParameter3()
-	{
-		$tropo = new Tropo();
-		try{
-			@ $tropo->say();
-		} catch (Exception $e) {
-			$this->assertEquals($e->getMessage(), "Argument 1 passed to Tropo::say() must be a string or an instance of Say.");
 		}
 	}
 

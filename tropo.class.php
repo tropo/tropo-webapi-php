@@ -552,14 +552,14 @@ class Tropo extends BaseClass {
         $params['voice'] = $this->_voice;
       }
       if (is_array($params['transcription'])) {
-        $p = array('url', 'id', 'emailFormat');
+        $p = array('url', 'id', 'emailFormat', 'language');
         foreach ($p as $option) {
           $$option = null;
           if (!is_array($params["transcription"]) || !array_key_exists($option, $params["transcription"])) {
             $params["transcription"][$option] = null;
           }
         }
-        $transcription = new Transcription($params["transcription"]["url"],$params["transcription"]["id"],$params["transcription"]["emailFormat"]);
+        $transcription = new Transcription($params["transcription"]["url"],$params["transcription"]["id"],$params["transcription"]["emailFormat"],$params["transcription"]["language"]);
       } else {
         $transcription = $params["transcription"];
       }
@@ -768,14 +768,14 @@ class Tropo extends BaseClass {
       }
 
       $params = $startRecording;
-      $p = array('format', 'method', 'password', 'url', 'username', 'transcriptionID', 'transcriptionEmailFormat', 'transcriptionOutURI', 'asyncUpload');
+      $p = array('format', 'method', 'password', 'url', 'username', 'transcriptionID', 'transcriptionEmailFormat', 'transcriptionOutURI', 'asyncUpload', 'transcriptionLanguage');
       foreach ($p as $option) {
         $$option = null;
         if (array_key_exists($option, $params)) {
           $$option = $params[$option];
         }
       }
-      $startRecording = new StartRecording($format, $method, $password, $url, $username, $transcriptionID, $transcriptionEmailFormat, $transcriptionOutURI, $asyncUpload);
+      $startRecording = new StartRecording($format, $method, $password, $url, $username, $transcriptionID, $transcriptionEmailFormat, $transcriptionOutURI, $asyncUpload, $transcriptionLanguage);
       
     } else {
 
@@ -2560,6 +2560,7 @@ class StartRecording extends BaseClass {
   private $_transcriptionID;
   private $_transcriptionEmailFormat;
   private $_transcriptionOutURI;
+  private $_transcriptionLanguage;
   private $_asyncUpload;
 
   public function getUrl() {
@@ -2578,8 +2579,9 @@ class StartRecording extends BaseClass {
   * @param string $transcriptionID
   * @param string $transcriptionEmailFormat
   * @param string $transcriptionOutURI
+  * @param string $transcriptionLanguage
   */
-  public function __construct($format=NULL, $method=NULL, $password=NULL, $url, $username=NULL, $transcriptionID=NULL, $transcriptionEmailFormat=NULL, $transcriptionOutURI=NULL, $asyncUpload=NULL) {
+  public function __construct($format=NULL, $method=NULL, $password=NULL, $url, $username=NULL, $transcriptionID=NULL, $transcriptionEmailFormat=NULL, $transcriptionOutURI=NULL, $asyncUpload=NULL, $transcriptionLanguage=NULL) {
     if(!isset($url)) {
       throw new Exception("Missing required property: 'url'");
     }
@@ -2594,6 +2596,7 @@ class StartRecording extends BaseClass {
     $this->_transcriptionID = $transcriptionID;
     $this->_transcriptionEmailFormat = $transcriptionEmailFormat;
     $this->_transcriptionOutURI = $transcriptionOutURI;
+    $this->_transcriptionLanguage = $transcriptionLanguage;
     $this->_asyncUpload = $asyncUpload;
   }
 
@@ -2610,6 +2613,7 @@ class StartRecording extends BaseClass {
     if(isset($this->_transcriptionID)) { $this->transcriptionID = $this->_transcriptionID; }
     if(isset($this->_transcriptionEmailFormat)) { $this->transcriptionEmailFormat = $this->_transcriptionEmailFormat; }
     if(isset($this->_transcriptionOutURI)) { $this->transcriptionOutURI = $this->_transcriptionOutURI; }
+    if(isset($this->_transcriptionLanguage)) { $this->transcriptionLanguage = $this->_transcriptionLanguage; }
     if(isset($this->_asyncUpload)) { $this->asyncUpload = $this->_asyncUpload; }
     return json_encode($this);
   }
@@ -2632,6 +2636,7 @@ class Transcription extends BaseClass {
   private $_url;
   private $_id;
   private $_emailFormat;
+  private $_language;
 
   /**
   * Class constructor
@@ -2639,11 +2644,13 @@ class Transcription extends BaseClass {
   * @param string $url
   * @param string $id
   * @param string $emailFormat
+  * @param string $language
   */
-  public function __construct($url, $id=NULL, $emailFormat=NULL) {
+  public function __construct($url, $id=NULL, $emailFormat=NULL, $language=NULL) {
     $this->_url = $url;
     $this->_id = $id;
     $this->_emailFormat = $emailFormat;
+    $this->_language = $language;
   }
 
   /**
@@ -2654,6 +2661,7 @@ class Transcription extends BaseClass {
     if(isset($this->_id)) { $this->id = $this->_id; }
     if(isset($this->_url)) { $this->url = $this->_url; }
     if(isset($this->_emailFormat)) { $this->emailFormat = $this->_emailFormat; }
+    if(isset($this->_language)) { $this->language = $this->_language; }
     return json_encode($this);
   }
 }

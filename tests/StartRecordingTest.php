@@ -27,13 +27,14 @@ class StartRecordingTest extends PHPUnit_Framework_TestCase
         'password' => '111111',
         'transcriptionOutURI' => 'mailto:you@yourmail.com',
         'transcriptionEmailFormat' => 'plain',
-        'transcriptionID' => '1234'
+        'transcriptionID' => '1234',
+        'transcriptionLanguage' => 'pt-br'
         );
       $tropo->startRecording($startRecording);
       $say = new Say("I am now recording!", null, null, null, null, "say");
       $tropo->say($say);
       $tropo->stopRecording();
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"startRecording":{"format":"audio/au","method":"POST","password":"111111","url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","username":"root","transcriptionID":"1234","transcriptionEmailFormat":"plain","transcriptionOutURI":"mailto:you@yourmail.com","asyncUpload":false}},{"say":[{"value":"I am now recording!","name":"say"}]},{"stopRecording":"null"}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"startRecording":{"format":"audio/au","method":"POST","password":"111111","url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","username":"root","transcriptionID":"1234","transcriptionEmailFormat":"plain","transcriptionOutURI":"mailto:you@yourmail.com","transcriptionLanguage":"pt-br","asyncUpload":false}},{"say":[{"value":"I am now recording!","name":"say"}]},{"stopRecording":"null"}]}');
     }
 
     public function testCreateMinObject() {
@@ -48,12 +49,12 @@ class StartRecordingTest extends PHPUnit_Framework_TestCase
 
     public function testCreateObject() {
       $tropo = new Tropo();
-      $startRecording = new StartRecording(AudioFormat::$mp3, "POST", "111111", "http://192.168.26.203/tropo-webapi-php/upload_file.php", "root", "1234", "plain", "mailto:you@yourmail.com", false);
+      $startRecording = new StartRecording(AudioFormat::$mp3, "POST", "111111", "http://192.168.26.203/tropo-webapi-php/upload_file.php", "root", "1234", "plain", "mailto:you@yourmail.com", false, "pt-br");
       $tropo->startRecording($startRecording);
       $say = new Say("I am now recording!", null, null, null, null, "say");
       $tropo->say($say);
       $tropo->stopRecording();
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"startRecording":{"format":"audio/mp3","method":"POST","password":"111111","url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","username":"root","transcriptionID":"1234","transcriptionEmailFormat":"plain","transcriptionOutURI":"mailto:you@yourmail.com","asyncUpload":false}},{"say":[{"value":"I am now recording!","name":"say"}]},{"stopRecording":"null"}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"startRecording":{"format":"audio/mp3","method":"POST","password":"111111","url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","username":"root","transcriptionID":"1234","transcriptionEmailFormat":"plain","transcriptionOutURI":"mailto:you@yourmail.com","transcriptionLanguage":"pt-br","asyncUpload":false}},{"say":[{"value":"I am now recording!","name":"say"}]},{"stopRecording":"null"}]}');
     }
     
 }

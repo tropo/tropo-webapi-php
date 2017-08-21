@@ -1,6 +1,6 @@
 <?php
 use PHPUnit\Framework\TestCase;
-require_once '../tropo.class.php';
+require_once 'tropo.class.php';
 
 class OnTest extends TestCase{
 

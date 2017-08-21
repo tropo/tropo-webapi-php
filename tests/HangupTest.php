@@ -1,5 +1,5 @@
 <?php
-require_once 'PHPUnit/Framework.php';
+use PHPUnit\Framework\TestCase;
 require_once 'tropo.class.php';
  
 class HangupTest extends PHPUnit_Framework_TestCase

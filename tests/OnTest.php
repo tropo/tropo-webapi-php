@@ -26,16 +26,6 @@ class OnTest extends TestCase{
 		$this->assertEquals(sprintf($tropo), '{"tropo":[{"on":[{"event":"continue","next":"say.php","say":{"value":"array continue!"}}]}]}');
 	}
 
-	public function testFailsOnWithNoEventParameter() {
-		$tropo = new Tropo();
-		try {
-			$say = new Say("object continue!");
-			@ $on = new On();
-		} catch (Exception $e) {
-			$this->assertEquals($e->getMessage(), "Missing required property: 'event'");
-		}
-	}
-
 	public function testFailsOnWithNoEventParameter1() {
 		$tropo = new Tropo();
 		try {
@@ -97,19 +87,6 @@ class OnTest extends TestCase{
 			$tropo->on($on);
 		} catch (Exception $e) {
 			$this->assertEquals($e->getMessage(), "Required property: 'event' must be a string.");
-		}
-	}
-
-	public function testFailsOnWithNoSayParameter1() {
-		$tropo = new Tropo();
-		try {
-			$on = array(
-				'event' => Event::$continue,
-				'next' => 'say.php'
-				);
-			$tropo->on($on);
-		} catch (Exception $e) {
-			$this->assertEquals($e->getMessage(), "Property: 'say' must be a Say of array or an instance of Say.");
 		}
 	}
 

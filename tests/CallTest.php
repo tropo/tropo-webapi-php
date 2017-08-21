@@ -30,7 +30,6 @@ class CallTest extends PHPUnit_Framework_TestCase
       $allowSignals = array('exit', 'quit');
       $headers = array('foo' => 'bar', 'bling' => 'baz');
       $params = array(
-        'to' => $to,
         'allowSignals' => $allowSignals,
         'answerOnMedia' => false,
         'channel' => Channel::$voice,
@@ -56,7 +55,6 @@ class CallTest extends PHPUnit_Framework_TestCase
       $allowSignals = array('exit', 'quit');
       $headers = array('foo' => 'bar', 'bling' => 'baz');
       $params = array(
-        'to' => $to,
         'allowSignals' => $allowSignals,
         'answerOnMedia' => false,
         'channel' => Channel::$voice,

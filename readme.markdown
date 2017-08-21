@@ -6,7 +6,7 @@ TropoPHP is a set of PHP classes for working with [Tropo's cloud communication s
 Requirements
 ============
 
- * PHP 5.3.0 or greater (5.4 not yet supported)
+ * PHP 5.6 or greater
  * PHP Notices disabled (All error reporting disabled is recommended for production use)
 
 Usage
@@ -19,7 +19,7 @@ Answer the phone, say something, and hang up.
 
     $tropo = new Tropo();    
     // Use Tropo's text to speech to say a phrase.    
-    $tropo->say('Yes, Tropo is this easy.');    
+    $tropo->say('Yes, Tropo is this easy.', array('name' => 'sayName'));    
 
     // Render the JSON back to Tropo.
     $tropo->renderJSON();    

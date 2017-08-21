@@ -24,7 +24,8 @@ class RecordTest extends PHPUnit_Framework_TestCase
       $transcription = array(
         'id' => '1234',
         'url' => 'mailto:you@yourmail.com',
-        'emailFormat' => 'omit'
+        'emailFormat' => 'omit',
+        'language' => 'en-uk'
         );
       $record = array(
         'attempts' => 2,
@@ -51,7 +52,7 @@ class RecordTest extends PHPUnit_Framework_TestCase
         'promptLogSecurity' => 'suppress'
         );
       $tropo->record($record);
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"attempts":2,"allowSignals":["exit","quit"],"bargein":true,"beep":true,"choices":{"terminator":"*"},"format":"audio/mp3","maxSilence":5,"maxTime":30,"method":"POST","password":"111111","required":true,"say":[{"value":"Please leave a message."},{"event":"timeout","value":"Sorry, I did not hear anything. Please call back."}],"timeout":30,"transcription":{"id":"1234","url":"mailto:you@yourmail.com","emailFormat":"omit"},"username":"root","url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","voice":"allison","interdigitTimeout":5,"asyncUpload":false,"name":"foo","promptLogSecurity":"suppress"}}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"attempts":2,"allowSignals":["exit","quit"],"bargein":true,"beep":true,"choices":{"terminator":"*"},"format":"audio/mp3","maxSilence":5,"maxTime":30,"method":"POST","password":"111111","required":true,"say":[{"value":"Please leave a message."},{"event":"timeout","value":"Sorry, I did not hear anything. Please call back."}],"timeout":30,"transcription":{"id":"1234","url":"mailto:you@yourmail.com","emailFormat":"omit","language":"en-uk"},"username":"root","url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","voice":"allison","interdigitTimeout":5,"asyncUpload":false,"name":"foo","promptLogSecurity":"suppress"}}]}');
     }
 
 
@@ -70,10 +71,10 @@ class RecordTest extends PHPUnit_Framework_TestCase
         new Say("Please leave a message."),
         new Say("Sorry, I did not hear anything. Please call back.", null , "timeout")
         );
-      $transcription = new Transcription("mailto:you@yourmail.com", "1234", "omit");
+      $transcription = new Transcription("mailto:you@yourmail.com", "1234", "omit", "en-uk");
       $record = new Record(2, $allowSignals, true, true, $choices, AudioFormat::$mp3, 5.0, 30.0, "POST", "111111", true, $say, 30.0, $transcription, "root", "http://192.168.26.203/tropo-webapi-php/upload_file.php", Voice::$US_English_female_allison, null, 5.0, false, "foo", "suppress");
       $tropo->record($record);
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"attempts":2,"allowSignals":["exit","quit"],"bargein":true,"beep":true,"choices":{"terminator":"*"},"format":"audio/mp3","maxSilence":5,"maxTime":30,"method":"POST","password":"111111","required":true,"say":[{"value":"Please leave a message."},{"event":"timeout","value":"Sorry, I did not hear anything. Please call back."}],"timeout":30,"transcription":{"id":"1234","url":"mailto:you@yourmail.com","emailFormat":"omit"},"username":"root","url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","voice":"allison","interdigitTimeout":5,"asyncUpload":false,"name":"foo","promptLogSecurity":"suppress"}}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"attempts":2,"allowSignals":["exit","quit"],"bargein":true,"beep":true,"choices":{"terminator":"*"},"format":"audio/mp3","maxSilence":5,"maxTime":30,"method":"POST","password":"111111","required":true,"say":[{"value":"Please leave a message."},{"event":"timeout","value":"Sorry, I did not hear anything. Please call back."}],"timeout":30,"transcription":{"id":"1234","url":"mailto:you@yourmail.com","emailFormat":"omit","language":"en-uk"},"username":"root","url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","voice":"allison","interdigitTimeout":5,"asyncUpload":false,"name":"foo","promptLogSecurity":"suppress"}}]}');
     }
 
     public function testRecordWithSensitivity() {
