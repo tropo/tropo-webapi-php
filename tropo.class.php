@@ -960,6 +960,31 @@ class Tropo extends BaseClass {
     }
   }
 
+  public function answer($answer=NULL) {
+    if (!isset($answer)) {
+      $answer =  "{}";
+    } elseif ($answer instanceof Answer) {
+    } elseif (is_array($answer)) {
+
+        $params = $answer;
+        $p = array('headers');
+        foreach ($p as $option) {
+          $$option = null;
+          if (array_key_exists($option, $params)) {
+            $$option = $params[$option];
+          }
+        }
+        $answer = new Answer($headers);
+
+      } else {
+
+      throw new Exception("Argument 1 passed to Tropo::answer() must be a array or an instance of Answer.");
+
+    }
+    $this->answer = sprintf('%s', $answer);
+    
+  }
+
   /**
   * Launches a new session with the Tropo Session API.
   * (Pass through to SessionAPI class.)
@@ -2841,6 +2866,29 @@ class Wait extends BaseClass {
   public function __toString() {
     $this->milliseconds = $this->_milliseconds; 
     if(isset($this->_allowSignals)) { $this->allowSignals = $this->_allowSignals; }
+    return json_encode($this);
+  }
+}
+
+class Answer extends BaseClass {
+
+  private $_headers;
+
+  /**
+  * Class constructor
+  *
+  * @param array $headers
+  */
+  public function __construct(Array $headers=NULL) {
+    $this->_headers = $headers;
+  }
+
+  /**
+  * Renders object in JSON format.
+  *
+  */
+  public function __toString() {
+    if(count($this->_headers)) { $this->headers = $this->_headers; }
     return json_encode($this);
   }
 }
