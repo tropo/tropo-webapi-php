@@ -516,9 +516,9 @@ class Tropo extends BaseClass {
       if(null === $record->getName()) {
         throw new Exception("Missing required property: 'name'");
       }
-      if (!(is_string($record->getUrl()) && ($record->getUrl() != ''))) {
-        throw new Exception("Required property: 'url' must be a string.");
-      }
+      // if (!(is_string($record->getUrl()) && ($record->getUrl() != ''))) {
+      //   throw new Exception("Required property: 'url' must be a string.");
+      // }
       if (!(is_string($record->getName()) && ($record->getName() != ''))) {
         throw new Exception("Required property: 'name' must be a string.");
       }
@@ -532,9 +532,9 @@ class Tropo extends BaseClass {
       if (!array_key_exists('name', $params)) {
         throw new Exception("Missing required property: 'name'");
       }
-      if (!(is_string($params['url']) && ($params['url'] != ''))) {
-        throw new Exception("Required property: 'url' must be a string.");
-      }
+      // if (!(is_string($params['url']) && ($params['url'] != ''))) {
+      //   throw new Exception("Required property: 'url' must be a string.");
+      // }
       if (!(is_string($params['name']) && ($params['name'] != ''))) {
         throw new Exception("Required property: 'name' must be a string.");
       }
@@ -1948,8 +1948,23 @@ class Record extends BaseClass {
     if(!isset($name)) {
       throw new Exception("Missing required property: 'name'");
     }
-    if (!(is_string($url) && ($url != ''))) {
-      throw new Exception("Required property: 'url' must be a string.");
+    if (is_string($url) && ($url != '')) {
+      $this->_url = sprintf('%s', new Url($url, $username, $password, $method));
+    } else if ($url instanceof Url) {
+      $this->_url = sprintf('%s', $url);
+    } else if (is_array($url) && count($url) > 0) {
+      foreach ($url as $key => $value) {
+        if (!($value instanceof Url)) {
+          throw new Exception("Property: 'url' must be a valid string, an instance of Url or an array of Urls.");
+        }
+        $this->_url[$key] = sprintf('%s', $value);
+      }
+      foreach ($this->_url as $key => $value) {
+        $this->_url[$key] = json_decode($value);
+      }
+      $this->_url = json_encode($this->_url);
+    } else {
+      throw new Exception("Property: 'url' must be a valid string, an instance of Url or an array of Urls.");
     }
     if (!(is_string($name) && ($name != ''))) {
       throw new Exception("Required property: 'name' must be a string.");
@@ -1962,8 +1977,8 @@ class Record extends BaseClass {
     $this->_format = $format;
     $this->_maxSilence = $maxSilence;
     $this->_maxTime = $maxTime;
-    $this->_method = $method;
-    $this->_password = $password;
+    //$this->_method = $method;
+    //$this->_password = $password;
     $this->_required = $required;
     if (isset($say)) {
       if ($say instanceof Say) {
@@ -1985,8 +2000,8 @@ class Record extends BaseClass {
     }
     $this->_timeout = $timeout;
     $this->_transcription = isset($transcription) ? sprintf('%s', $transcription) : null;
-    $this->_username = $username;
-    $this->_url = $url;
+    //$this->_username = $username;
+    
     $this->_voice = $voice;
     $this->_interdigitTimeout = $interdigitTimeout;
     $this->_asyncUpload = $asyncUpload;
@@ -2015,7 +2030,7 @@ class Record extends BaseClass {
     if(isset($this->_timeout)) { $this->timeout = $this->_timeout; }
     if(isset($this->_transcription)) { $this->transcription = json_decode($this->_transcription); }
     if(isset($this->_username)) { $this->username = $this->_username; }
-    if(isset($this->_url)) { $this->url = $this->_url; }
+    if(isset($this->_url)) { $this->url = json_decode($this->_url); }
     if(isset($this->_voice)) { $this->voice = $this->_voice; }
     if(isset($this->_interdigitTimeout)) { $this->interdigitTimeout = $this->_interdigitTimeout; }
     if(isset($this->_asyncUpload)) { $this->asyncUpload = $this->_asyncUpload; }
@@ -2889,6 +2904,41 @@ class Answer extends BaseClass {
   */
   public function __toString() {
     if(count($this->_headers)) { $this->headers = $this->_headers; }
+    return json_encode($this);
+  }
+}
+
+class Url extends BaseClass {
+
+  private $_url;
+  private $_username;
+  private $_password;
+  private $_method;
+
+  /**
+  * Class constructor
+  *
+  * @param string $url
+  * @param string $username
+  * @param string $password
+  * @param string $method
+  */
+  public function __construct($url, $username=NULL, $password=NULL, $method=NULL) {
+    $this->_url = $url;
+    $this->_username = $username;
+    $this->_password = $password;
+    $this->_method = $method;
+  }
+
+  /**
+  * Renders object in JSON format.
+  *
+  */
+  public function __toString() {
+    if(isset($this->_url)) { $this->url = $this->_url; }
+    if(isset($this->_username)) { $this->username = $this->_username; }
+    if(isset($this->_password)) { $this->password = $this->_password; }
+    if(isset($this->_method)) { $this->method = $this->_method; }
     return json_encode($this);
   }
 }

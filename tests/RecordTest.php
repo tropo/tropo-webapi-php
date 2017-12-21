@@ -12,7 +12,32 @@ class RecordTest extends PHPUnit_Framework_TestCase
         'name' => 'foo'
         );
       $tropo->record($record);
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","name":"foo"}}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"url":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php"},"name":"foo"}}]}');
+    }
+
+    public function testRecordWithMinOptions1() {
+      $tropo = new Tropo();
+      $url = new Url('http://192.168.26.203/tropo-webapi-php/upload_file.php', 'root', '111111', 'POST');
+      $record = array(
+        'url' => $url,
+        'name' => 'foo'
+        );
+      $tropo->record($record);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"url":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","username":"root","password":"111111","method":"POST"},"name":"foo"}}]}');
+    }
+
+    public function testRecordWithMinOptions2() {
+      $tropo = new Tropo();
+      $url = array(
+        new Url('http://192.168.26.203/tropo-webapi-php/upload_file.php', 'root', '111111', 'POST'),
+        new Url('http://192.168.26.204/tropo-webapi-php/upload_file.php')
+      );
+      $record = array(
+        'url' => $url,
+        'name' => 'foo'
+        );
+      $tropo->record($record);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"url":[{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","username":"root","password":"111111","method":"POST"},{"url":"http://192.168.26.204/tropo-webapi-php/upload_file.php"}],"name":"foo"}}]}');
     }
 
     public function testRecordWithAllOptions() {
@@ -52,7 +77,7 @@ class RecordTest extends PHPUnit_Framework_TestCase
         'promptLogSecurity' => 'suppress'
         );
       $tropo->record($record);
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"attempts":2,"allowSignals":["exit","quit"],"bargein":true,"beep":true,"choices":{"terminator":"*"},"format":"audio/mp3","maxSilence":5,"maxTime":30,"method":"POST","password":"111111","required":true,"say":[{"value":"Please leave a message."},{"event":"timeout","value":"Sorry, I did not hear anything. Please call back."}],"timeout":30,"transcription":{"id":"1234","url":"mailto:you@yourmail.com","emailFormat":"omit","language":"en-uk"},"username":"root","url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","voice":"allison","interdigitTimeout":5,"asyncUpload":false,"name":"foo","promptLogSecurity":"suppress"}}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"attempts":2,"allowSignals":["exit","quit"],"bargein":true,"beep":true,"choices":{"terminator":"*"},"format":"audio/mp3","maxSilence":5,"maxTime":30,"required":true,"say":[{"value":"Please leave a message."},{"event":"timeout","value":"Sorry, I did not hear anything. Please call back."}],"timeout":30,"transcription":{"id":"1234","url":"mailto:you@yourmail.com","emailFormat":"omit","language":"en-uk"},"url":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","username":"root","password":"111111","method":"POST"},"voice":"allison","interdigitTimeout":5,"asyncUpload":false,"name":"foo","promptLogSecurity":"suppress"}}]}');
     }
 
 
@@ -60,7 +85,7 @@ class RecordTest extends PHPUnit_Framework_TestCase
       $tropo = new Tropo();
       $record = new Record(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "http://192.168.26.203/tropo-webapi-php/upload_file.php", null, null, null, null, "foo", null);
       $tropo->record($record);
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","name":"foo"}}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"url":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php"},"name":"foo"}}]}');
     }
 
     public function testCreateObject() {
@@ -74,7 +99,7 @@ class RecordTest extends PHPUnit_Framework_TestCase
       $transcription = new Transcription("mailto:you@yourmail.com", "1234", "omit", "en-uk");
       $record = new Record(2, $allowSignals, true, true, $choices, AudioFormat::$mp3, 5.0, 30.0, "POST", "111111", true, $say, 30.0, $transcription, "root", "http://192.168.26.203/tropo-webapi-php/upload_file.php", Voice::$US_English_female_allison, null, 5.0, false, "foo", "suppress");
       $tropo->record($record);
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"attempts":2,"allowSignals":["exit","quit"],"bargein":true,"beep":true,"choices":{"terminator":"*"},"format":"audio/mp3","maxSilence":5,"maxTime":30,"method":"POST","password":"111111","required":true,"say":[{"value":"Please leave a message."},{"event":"timeout","value":"Sorry, I did not hear anything. Please call back."}],"timeout":30,"transcription":{"id":"1234","url":"mailto:you@yourmail.com","emailFormat":"omit","language":"en-uk"},"username":"root","url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","voice":"allison","interdigitTimeout":5,"asyncUpload":false,"name":"foo","promptLogSecurity":"suppress"}}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"attempts":2,"allowSignals":["exit","quit"],"bargein":true,"beep":true,"choices":{"terminator":"*"},"format":"audio/mp3","maxSilence":5,"maxTime":30,"required":true,"say":[{"value":"Please leave a message."},{"event":"timeout","value":"Sorry, I did not hear anything. Please call back."}],"timeout":30,"transcription":{"id":"1234","url":"mailto:you@yourmail.com","emailFormat":"omit","language":"en-uk"},"url":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","username":"root","password":"111111","method":"POST"},"voice":"allison","interdigitTimeout":5,"asyncUpload":false,"name":"foo","promptLogSecurity":"suppress"}}]}');
     }
 
     public function testRecordWithSensitivity() {
@@ -85,14 +110,14 @@ class RecordTest extends PHPUnit_Framework_TestCase
         'sensitivity' => 0.5
         );
       $tropo->record($record);
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","name":"foo","sensitivity":0.5}}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"url":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php"},"name":"foo","sensitivity":0.5}}]}');
     }
 
     public function testCreateObjectWithSensitivity() {
       $tropo = new Tropo();
       $record = new Record(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "http://192.168.26.203/tropo-webapi-php/upload_file.php", null, null, null, null, "foo", null, 0.5);
       $tropo->record($record);
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","name":"foo","sensitivity":0.5}}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"record":{"url":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php"},"name":"foo","sensitivity":0.5}}]}');
     }
 
 }
