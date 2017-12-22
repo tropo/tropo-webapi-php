@@ -13,7 +13,36 @@ class StartRecordingTest extends PHPUnit_Framework_TestCase
       $say = new Say("I am now recording!", null, null, null, null, "say");
       $tropo->say($say);
       $tropo->stopRecording();
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"startRecording":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php"}},{"say":[{"value":"I am now recording!","name":"say"}]},{"stopRecording":"null"}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"startRecording":{"url":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php"}}},{"say":[{"value":"I am now recording!","name":"say"}]},{"stopRecording":"null"}]}');
+    }
+
+    public function testStartRecordingWithMinOptions1() {
+      $tropo = new Tropo();
+      $url = new Url('http://192.168.26.203/tropo-webapi-php/upload_file.php');
+      $startRecording = array(
+        'url' => $url
+        );
+      $tropo->startRecording($startRecording);
+      $say = new Say("I am now recording!", null, null, null, null, "say");
+      $tropo->say($say);
+      $tropo->stopRecording();
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"startRecording":{"url":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php"}}},{"say":[{"value":"I am now recording!","name":"say"}]},{"stopRecording":"null"}]}');
+    }
+
+    public function testStartRecordingWithMinOptions2() {
+      $tropo = new Tropo();
+      $url = array(
+        new Url('http://192.168.26.203/tropo-webapi-php/upload_file.php', 'root', '111111', 'POST'),
+        new Url('http://192.168.26.204/tropo-webapi-php/upload_file.php')
+      );
+      $startRecording = array(
+        'url' => $url
+        );
+      $tropo->startRecording($startRecording);
+      $say = new Say("I am now recording!", null, null, null, null, "say");
+      $tropo->say($say);
+      $tropo->stopRecording();
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"startRecording":{"url":[{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","username":"root","password":"111111","method":"POST"},{"url":"http://192.168.26.204/tropo-webapi-php/upload_file.php"}]}},{"say":[{"value":"I am now recording!","name":"say"}]},{"stopRecording":"null"}]}');
     }
 
     public function testRecordWithAllOptions() {
@@ -34,7 +63,7 @@ class StartRecordingTest extends PHPUnit_Framework_TestCase
       $say = new Say("I am now recording!", null, null, null, null, "say");
       $tropo->say($say);
       $tropo->stopRecording();
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"startRecording":{"format":"audio/au","method":"POST","password":"111111","url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","username":"root","transcriptionID":"1234","transcriptionEmailFormat":"plain","transcriptionOutURI":"mailto:you@yourmail.com","transcriptionLanguage":"pt-br","asyncUpload":false}},{"say":[{"value":"I am now recording!","name":"say"}]},{"stopRecording":"null"}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"startRecording":{"format":"audio/au","url":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","username":"root","password":"111111","method":"POST"},"transcriptionID":"1234","transcriptionEmailFormat":"plain","transcriptionOutURI":"mailto:you@yourmail.com","transcriptionLanguage":"pt-br","asyncUpload":false}},{"say":[{"value":"I am now recording!","name":"say"}]},{"stopRecording":"null"}]}');
     }
 
     public function testCreateMinObject() {
@@ -44,7 +73,7 @@ class StartRecordingTest extends PHPUnit_Framework_TestCase
       $say = new Say("I am now recording!", null, null, null, null, "say");
       $tropo->say($say);
       $tropo->stopRecording();
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"startRecording":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php"}},{"say":[{"value":"I am now recording!","name":"say"}]},{"stopRecording":"null"}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"startRecording":{"url":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php"}}},{"say":[{"value":"I am now recording!","name":"say"}]},{"stopRecording":"null"}]}');
     }
 
     public function testCreateObject() {
@@ -54,7 +83,7 @@ class StartRecordingTest extends PHPUnit_Framework_TestCase
       $say = new Say("I am now recording!", null, null, null, null, "say");
       $tropo->say($say);
       $tropo->stopRecording();
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"startRecording":{"format":"audio/mp3","method":"POST","password":"111111","url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","username":"root","transcriptionID":"1234","transcriptionEmailFormat":"plain","transcriptionOutURI":"mailto:you@yourmail.com","transcriptionLanguage":"pt-br","asyncUpload":false}},{"say":[{"value":"I am now recording!","name":"say"}]},{"stopRecording":"null"}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"startRecording":{"format":"audio/mp3","url":{"url":"http://192.168.26.203/tropo-webapi-php/upload_file.php","username":"root","password":"111111","method":"POST"},"transcriptionID":"1234","transcriptionEmailFormat":"plain","transcriptionOutURI":"mailto:you@yourmail.com","transcriptionLanguage":"pt-br","asyncUpload":false}},{"say":[{"value":"I am now recording!","name":"say"}]},{"stopRecording":"null"}]}');
     }
     
 }

@@ -754,18 +754,18 @@ class Tropo extends BaseClass {
       if(null === $startRecording->getUrl()) {
         throw new Exception("Missing required property: 'url'");
       }
-      if (!(is_string($startRecording->getUrl()) && ($startRecording->getUrl() != ''))) {
-        throw new Exception("Required property: 'url' must be a string.");
-      }
+      // if (!(is_string($startRecording->getUrl()) && ($startRecording->getUrl() != ''))) {
+      //   throw new Exception("Required property: 'url' must be a string.");
+      // }
 
     } elseif (is_array($startRecording)) {
 
       if (!array_key_exists('url', $startRecording)) {
         throw new Exception("Missing required property: 'url'");
       }
-      if (!(is_string($startRecording['url']) && ($startRecording['url'] != ''))) {
-        throw new Exception("Required property: 'url' must be a string.");
-      }
+      // if (!(is_string($startRecording['url']) && ($startRecording['url'] != ''))) {
+      //   throw new Exception("Required property: 'url' must be a string.");
+      // }
 
       $params = $startRecording;
       $p = array('format', 'method', 'password', 'url', 'username', 'transcriptionID', 'transcriptionEmailFormat', 'transcriptionOutURI', 'asyncUpload', 'transcriptionLanguage');
@@ -2625,14 +2625,29 @@ class StartRecording extends BaseClass {
     if(!isset($url)) {
       throw new Exception("Missing required property: 'url'");
     }
-    if (!(is_string($url) && ($url != ''))) {
-      throw new Exception("Required property: 'url' must be a string.");
+    if (is_string($url) && ($url != '')) {
+      $this->_url = sprintf('%s', new Url($url, $username, $password, $method));
+    } else if ($url instanceof Url) {
+      $this->_url = sprintf('%s', $url);
+    } else if (is_array($url) && count($url) > 0) {
+      foreach ($url as $key => $value) {
+        if (!($value instanceof Url)) {
+          throw new Exception("Property: 'url' must be a valid string, an instance of Url or an array of Urls.");
+        }
+        $this->_url[$key] = sprintf('%s', $value);
+      }
+      foreach ($this->_url as $key => $value) {
+        $this->_url[$key] = json_decode($value);
+      }
+      $this->_url = json_encode($this->_url);
+    } else {
+      throw new Exception("Property: 'url' must be a valid string, an instance of Url or an array of Urls.");
     }
     $this->_format = $format;
-    $this->_method = $method;
-    $this->_password = $password;
-    $this->_url = $url;
-    $this->_username = $username;
+    //$this->_method = $method;
+    //$this->_password = $password;
+    //$this->_url = $url;
+    //$this->_username = $username;
     $this->_transcriptionID = $transcriptionID;
     $this->_transcriptionEmailFormat = $transcriptionEmailFormat;
     $this->_transcriptionOutURI = $transcriptionOutURI;
@@ -2648,7 +2663,7 @@ class StartRecording extends BaseClass {
     if(isset($this->_format)) { $this->format = $this->_format; }
     if(isset($this->_method)) { $this->method = $this->_method; }
     if(isset($this->_password)) { $this->password = $this->_password; }
-    if(isset($this->_url)) { $this->url = $this->_url; }
+    if(isset($this->_url)) { $this->url = json_decode($this->_url); }
     if(isset($this->_username)) { $this->username = $this->_username; }
     if(isset($this->_transcriptionID)) { $this->transcriptionID = $this->_transcriptionID; }
     if(isset($this->_transcriptionEmailFormat)) { $this->transcriptionEmailFormat = $this->_transcriptionEmailFormat; }
