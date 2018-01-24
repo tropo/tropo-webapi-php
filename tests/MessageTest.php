@@ -8,11 +8,10 @@ class MessageTest extends PHPUnit_Framework_TestCase
     public function testMessageWithMinOptions() {
       $tropo = new Tropo();
       $params = array(
-        'to' => 'sip:pengxli@192.168.26.1:5678',
-        'name' => 'foo'
+        'to' => 'sip:pengxli@192.168.26.1:5678'
         );
       $tropo->message("This is an announcement.", $params);
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":{"value":"This is an announcement."},"to":"sip:pengxli@192.168.26.1:5678","name":"foo"}}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":{"value":"This is an announcement."},"to":"sip:pengxli@192.168.26.1:5678"}}]}');
     }
 
     public function testMessageWithExtraSayOptiions() {
@@ -20,11 +19,10 @@ class MessageTest extends PHPUnit_Framework_TestCase
       $say = "Remember, you have a meeting at 2 PM.";
       $params = array(
         'say' => $say,
-        'to' => 'sip:pengxli@192.168.26.1:5678',
-        'name' => 'foo'
+        'to' => 'sip:pengxli@192.168.26.1:5678'
         );
       $tropo->message("This is an announcement.", $params);
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":[{"value":"This is an announcement."},{"value":"Remember, you have a meeting at 2 PM."}],"to":"sip:pengxli@192.168.26.1:5678","name":"foo"}}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":[{"value":"This is an announcement."},{"value":"Remember, you have a meeting at 2 PM."}],"to":"sip:pengxli@192.168.26.1:5678"}}]}');
     }
 
     public function testMessageWithAllOptions() {
@@ -35,7 +33,6 @@ class MessageTest extends PHPUnit_Framework_TestCase
       $params = array(
         'say' => $say,
         'to' => $to,
-        'name' => 'foo',
         'answerOnMedia' => false,
         'channel' => Channel::$voice,
         'from' => '3055551000',
@@ -47,14 +44,14 @@ class MessageTest extends PHPUnit_Framework_TestCase
         'headers' => $headers
         );
       $tropo->message("This is an announcement.", $params);
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":[{"value":"This is an announcement."},{"value":"Remember, you have a meeting at 2 PM."},{"value":"This is tropo.com."}],"to":["sip:pengxli@192.168.26.1:5678","sip:pengxli@172.16.72.131:5678"],"name":"foo","channel":"VOICE","network":"SIP","from":"3055551000","voice":"allison","timeout":60,"answerOnMedia":false,"headers":{"foo":"bar","bling":"baz"},"required":true,"promptLogSecurity":"suppress"}}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":[{"value":"This is an announcement."},{"value":"Remember, you have a meeting at 2 PM."},{"value":"This is tropo.com."}],"to":["sip:pengxli@192.168.26.1:5678","sip:pengxli@172.16.72.131:5678"],"channel":"VOICE","network":"SIP","from":"3055551000","voice":"allison","timeout":60,"answerOnMedia":false,"headers":{"foo":"bar","bling":"baz"},"required":true,"promptLogSecurity":"suppress"}}]}');
     }
 
     public function testCreateMinObject() {
       $tropo = new Tropo();
-      $message = new Message(new Say("This is an announcement."), "sip:pengxli@192.168.26.1:5678", null, null, null, null, null, null, null, "foo");
+      $message = new Message(new Say("This is an announcement."), "sip:pengxli@192.168.26.1:5678");
       $tropo->message($message);
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":{"value":"This is an announcement."},"to":"sip:pengxli@192.168.26.1:5678","name":"foo"}}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":{"value":"This is an announcement."},"to":"sip:pengxli@192.168.26.1:5678"}}]}');
     }
 
     public function testCreateObject1() {
@@ -63,9 +60,9 @@ class MessageTest extends PHPUnit_Framework_TestCase
         new Say("This is an announcement."),
         new Say("Remember, you have a meeting at 2 PM.")
         );
-      $message = new Message($say, "sip:pengxli@192.168.26.1:5678", null, null, null, null, null, null, null, "foo");
+      $message = new Message($say, "sip:pengxli@192.168.26.1:5678");
       $tropo->message($message);
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":[{"value":"This is an announcement."},{"value":"Remember, you have a meeting at 2 PM."}],"to":"sip:pengxli@192.168.26.1:5678","name":"foo"}}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":[{"value":"This is an announcement."},{"value":"Remember, you have a meeting at 2 PM."}],"to":"sip:pengxli@192.168.26.1:5678"}}]}');
     }
 
     public function testCreateObject2() {
@@ -80,9 +77,9 @@ class MessageTest extends PHPUnit_Framework_TestCase
         'sip:pengxli@172.16.72.131:5678'
         );
       $headers = array('foo' => 'bar', 'bling' => 'baz');
-      $message = new Message($say, $to, Channel::$voice, Network::$sip, "3055551000", Voice::$US_English_female_allison, 60, false, $headers, "foo", true, "suppress");
+      $message = new Message($say, $to, Channel::$voice, Network::$sip, "3055551000", Voice::$US_English_female_allison, 60, false, $headers, null, true, "suppress");
       $tropo->message($message);
-      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":[{"value":"This is an announcement."},{"value":"Remember, you have a meeting at 2 PM."},{"value":"This is tropo.com."}],"to":["sip:pengxli@192.168.26.1:5678","sip:pengxli@172.16.72.131:5678"],"name":"foo","channel":"VOICE","network":"SIP","from":"3055551000","voice":"allison","timeout":60,"answerOnMedia":false,"headers":{"foo":"bar","bling":"baz"},"required":true,"promptLogSecurity":"suppress"}}]}');
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":[{"value":"This is an announcement."},{"value":"Remember, you have a meeting at 2 PM."},{"value":"This is tropo.com."}],"to":["sip:pengxli@192.168.26.1:5678","sip:pengxli@172.16.72.131:5678"],"channel":"VOICE","network":"SIP","from":"3055551000","voice":"allison","timeout":60,"answerOnMedia":false,"headers":{"foo":"bar","bling":"baz"},"required":true,"promptLogSecurity":"suppress"}}]}');
     }
 }
 ?>

@@ -172,9 +172,6 @@ class Tropo extends BaseClass {
       if(null === $call->getTo()) {
         throw new Exception("Missing required property: 'to'");
       }
-      if(null === $call->getName()) {
-        throw new Exception("Missing required property: 'name'");
-      }
       if (is_string($call->getTo()) && ($call->getTo() != '')) {
       } elseif (is_array($call->getTo())) {
         foreach ($call->getTo() as $value) {
@@ -184,9 +181,6 @@ class Tropo extends BaseClass {
         }
       } else {
         throw new Exception("Required property: 'to' must be a string or a string of array.");
-      }
-      if (!(is_string($call->getName()) && ($call->getName() != ''))) {
-        throw new Exception("Required property: 'to' must be a string.");
       }
 
     } elseif (is_array($call) || (is_string($call) && ($call !== ''))) {
@@ -207,31 +201,22 @@ class Tropo extends BaseClass {
         $to = $call;
       }
 
-      if (isset($params) && is_array($params)) {
+      if (isset($params)) {
 
-        if (array_key_exists('name', $params)) {
-          if (is_string($params["name"]) && ($params["name"] !=='')) {
-            $name = $params["name"];
-          } else {
-            throw new Exception("'name' must be is a string.");
+        if (is_array($params)) {
+          $p = array('from', 'network', 'channel', 'answerOnMedia', 'timeout', 'headers', 'allowSignals', 'machineDetection', 'voice', 'name', 'required', 'callbackUrl', 'promptLogSecurity', 'label');
+          foreach ($p as $option) {
+            $$option = null;
+            if (array_key_exists($option, $params)) {
+              $$option = $params[$option];
+            }
           }
+          $call = new Call($to, $from, $network, $channel, $answerOnMedia, $timeout, $headers, null, $allowSignals, $machineDetection, $voice, $name, $required, $callbackUrl, $promptLogSecurity, $label);
         } else {
-          throw new Exception("Missing required property: 'name'");
+          throw new Exception("When Argument 1 passed to Tropo::call() is a string, argument 2 passed to Tropo::call() must be of the type array.");
         }
-
-        $p = array('from', 'network', 'channel', 'answerOnMedia', 'timeout', 'headers', 'allowSignals', 'machineDetection', 'voice', 'required', 'callbackUrl', 'promptLogSecurity', 'label');
-        foreach ($p as $option) {
-          $$option = null;
-          if (array_key_exists($option, $params)) {
-            $$option = $params[$option];
-          }
-        }
-        $call = new Call($to, $from, $network, $channel, $answerOnMedia, $timeout, $headers, null, $allowSignals, $machineDetection, $voice, $name, $required, $callbackUrl, $promptLogSecurity, $label);
-
       } else {
-
-        throw new Exception("When Argument 1 passed to Tropo::call() is a string, argument 2 passed to Tropo::call() must be of the type array.");
-
+        $call = new Call($to);
       }
     } else {
 
@@ -255,42 +240,30 @@ class Tropo extends BaseClass {
       if(null === $conference->getId()) {
         throw new Exception("Missing required property: 'id'");
       }
-      if(null === $conference->getName()) {
-        throw new Exception("Missing required property: 'name'");
-      }
-      if (!(is_string($conference->getName()) && ($conference->getName() != ''))) {
-        throw new Exception("Required property: 'name' must be a string.");
-      }
       if (!(is_string($conference->getId()) && ($conference->getId() != ''))) {
         throw new Exception("Required property: 'id' must be a string.");
       }
 
     } elseif (is_string($conference) && ($conference !== '')) {
 
-      if (isset($params) && is_array($params)) {
+      $id = $conference;
+      if (isset($params)) {
 
-        if (array_key_exists('name', $params)) {
-          if (is_string($params["name"]) && ($params["name"] !=='')) {
-            $name = $params["name"];
-          } else {
-            throw new Exception("'name' must be is a string.");
+        if (is_array($params)) {
+          $p = array('name', 'mute', 'on', 'playTones', 'required', 'terminator', 'allowSignals', 'interdigitTimeout', 'joinPrompt', 'leavePrompt', 'voice', 'promptLogSecurity');
+          foreach ($p as $option) {
+            $$option = null;
+            if (array_key_exists($option, $params)) {
+              $$option = $params[$option];
+            }
           }
+          $conference = new Conference($name, $id, $mute, $on, $playTones, $required, $terminator, $allowSignals, $interdigitTimeout, $joinPrompt, $leavePrompt, $voice, $promptLogSecurity);
         } else {
-          throw new Exception("Missing required property: 'name'");
+          throw new Exception("When Argument 1 passed to Tropo::conference() is a string, argument 2 passed to Tropo::conference() must be of the type array.");
         }
-
-        $p = array('name', 'mute', 'on', 'playTones', 'required', 'terminator', 'allowSignals', 'interdigitTimeout', 'joinPrompt', 'leavePrompt', 'voice', 'promptLogSecurity');
-        foreach ($p as $option) {
-          $$option = null;
-          if (array_key_exists($option, $params)) {
-            $$option = $params[$option];
-          }
-        }
-        $id = $conference;
-        $conference = new Conference($name, $id, $mute, $on, $playTones, $required, $terminator, $allowSignals, $interdigitTimeout, $joinPrompt, $leavePrompt, $voice, $promptLogSecurity);
       } else {
 
-        throw new Exception("When Argument 1 passed to Tropo::conference() is a string, argument 2 passed to Tropo::conference() must be of the type array.");
+        $conference = new Conference(null, $id);
 
       }
     } else {
@@ -326,9 +299,6 @@ class Tropo extends BaseClass {
       if(null === $message->getTo()) {
         throw new Exception("Missing required property: 'to'");
       }
-      if(null === $message->getName()) {
-        throw new Exception("Missing required property: 'name'");
-      }
       if (is_string($message->getTo()) && ($message->getTo() != '')) {
       } elseif (is_array($message->getTo())) {
         foreach ($message->getTo() as $value) {
@@ -338,9 +308,6 @@ class Tropo extends BaseClass {
         }
       } else {
         throw new Exception("Required property: 'to' must be a string or a string of array.");
-      }
-      if(!(is_string($message->getName()) && ($message->getName() != ''))) {
-        throw new Exception("Required property: 'name' must be a string.");
       }
     } elseif (is_string($message) && ($message!=='')) {
 
@@ -363,16 +330,6 @@ class Tropo extends BaseClass {
           throw new Exception("Missing required property: 'to'");
         }
 
-        if (array_key_exists('name', $params)) {
-          if (is_string($params["name"]) && ($params["name"] !=='')) {
-            $name = $params["name"];
-          } else {
-            throw new Exception("'name' must be is a string.");
-          }
-        } else {
-          throw new Exception("Missing required property: 'name'");
-        }
-
         if (array_key_exists('say', $params)) {
           if (is_array($params["say"])) {
             $say[] = new Say($message);
@@ -391,7 +348,7 @@ class Tropo extends BaseClass {
           $say = new Say($message);
         }
         
-        $p = array('channel', 'network', 'from', 'voice', 'timeout', 'answerOnMedia','headers','required','promptLogSecurity');
+        $p = array('channel', 'network', 'from', 'voice', 'timeout', 'answerOnMedia','headers','name','required','promptLogSecurity');
         foreach ($p as $option) {
           $$option = null;
           if (is_array($params) && array_key_exists($option, $params)) {
@@ -513,15 +470,9 @@ class Tropo extends BaseClass {
       if(null === $record->getUrl()) {
         throw new Exception("Missing required property: 'url'");
       }
-      if(null === $record->getName()) {
-        throw new Exception("Missing required property: 'name'");
-      }
       // if (!(is_string($record->getUrl()) && ($record->getUrl() != ''))) {
       //   throw new Exception("Required property: 'url' must be a string.");
       // }
-      if (!(is_string($record->getName()) && ($record->getName() != ''))) {
-        throw new Exception("Required property: 'name' must be a string.");
-      }
 
     } elseif (is_array($record)) {
 
@@ -529,15 +480,9 @@ class Tropo extends BaseClass {
       if (!array_key_exists('url', $params)) {
         throw new Exception("Missing required property: 'url'");
       }
-      if (!array_key_exists('name', $params)) {
-        throw new Exception("Missing required property: 'name'");
-      }
       // if (!(is_string($params['url']) && ($params['url'] != ''))) {
       //   throw new Exception("Required property: 'url' must be a string.");
       // }
-      if (!(is_string($params['name']) && ($params['name'] != ''))) {
-        throw new Exception("Required property: 'name' must be a string.");
-      }
       $p = array('voice', 'emailFormat', 'transcription', 'terminator');
       foreach ($p as $option) {
         $params[$option] = array_key_exists($option, $params) ? $params[$option] : null;
@@ -613,40 +558,31 @@ class Tropo extends BaseClass {
       if(null === $redirect->getTo()) {
         throw new Exception("Missing required property: 'to'");
       }
-      if(null === $redirect->getName()) {
-        throw new Exception("Missing required property: 'name'");
-      }
       if (!(is_string($redirect->getTo()) && ($redirect->getTo() != ''))) {
         throw new Exception("Required property: 'to' must be a string.");
-      }
-      if (!(is_string($redirect->getName()) && ($redirect->getName() != ''))) {
-        throw new Exception("Required property: 'name' must be a string.");
       }
 
     } elseif (is_string($redirect) && ($redirect !== '')) {
 
-      if (isset($params) && is_array($params)) {
+      if (isset($params)) {
 
-        if (array_key_exists('name', $params)) {
-          if (is_string($params["name"]) && ($params["name"] !=='')) {
-            $name = $params["name"];
-          } else {
-            throw new Exception("'name' must be is a string.");
+        if (is_array($params)) {
+          $required = null;
+          if (array_key_exists('required', $params)) {
+            $required = $params["required"];
           }
+          $name = null;
+          if (array_key_exists('name', $params)) {
+            $name = $params["name"];
+          }
+
+          $redirect = new Redirect($redirect, null, $name, $required);
         } else {
-          throw new Exception("Missing required property: 'name'");
+          throw new Exception("When Argument 1 passed to Tropo::redirect() is a string, argument 2 passed to Tropo::redirect() must be of the type array.");
         }
-
-        $required = null;
-        if (array_key_exists('required', $params)) {
-          $required = $params["required"];
-        }
-
-        $redirect = new Redirect($redirect, null, $name, $required);
-
       } else {
 
-        throw new Exception("When Argument 1 passed to Tropo::redirect() is a string, argument 2 passed to Tropo::redirect() must be of the type array.");
+        $redirect = new Redirect($redirect);
 
       }
 
@@ -686,32 +622,17 @@ class Tropo extends BaseClass {
         throw new Exception("Missing required property: 'value'");
 
       }
-      if(!(is_string($say->getName()) && ($say->getName() != ''))) {
-
-        throw new Exception("Missing required property: 'name'");
-
-      }
 
       $say->setEvent(null);
 
     } elseif (is_string($say) && ($say != '')) {
 
-      if (isset($params) && is_array($params)) {
+      $value = $say;
 
-        if (array_key_exists('name', $params)) {
+      if (isset($params)) {
 
-          if (is_string($params['name']) && ($params['name'] != '')) {
-
-            $name = $params['name'];
-
-          } else {
-
-            throw new Exception("Required property: 'name' must be a string.");
-
-          }
-
-          $p = array('as', 'event','voice', 'allowSignals', 'required', 'promptLogSecurity');
-          $value = $say;
+        if (is_array($params)) {
+          $p = array('as', 'event','voice', 'allowSignals', 'name', 'required', 'promptLogSecurity');
           foreach ($p as $option) {
             $$option = null;
             if (array_key_exists($option, $params)) {
@@ -721,16 +642,12 @@ class Tropo extends BaseClass {
           $voice = isset($voice) ? $voice : $this->_voice;
           $event = null;
           $say = new Say($value, $as, $event, $voice, $allowSignals, $name, $required, $promptLogSecurity);
-
         } else {
-
-          throw new Exception("Missing required property: 'name'");
-
+          throw new Exception("When Argument 1 passed to Tropo::say() is a string, argument 2 passed to Tropo::say() must be of the type array.");
         }
-
       } else {
 
-        throw new Exception("When Argument 1 passed to Tropo::say() is a string, argument 2 passed to Tropo::say() must be of the type array.");
+        $say = new Say($value);
 
       }
     } else {
@@ -809,9 +726,6 @@ class Tropo extends BaseClass {
       if(null === $transfer->getTo()) {
         throw new Exception("Missing required property: 'to'");
       }
-      if(null === $transfer->getName()) {
-        throw new Exception("Missing required property: 'name'");
-      }
       if (is_string($transfer->getTo()) && ($transfer->getTo() != '')) {
       } elseif (is_array($transfer->getTo())) {
         foreach ($transfer->getTo() as $value) {
@@ -821,9 +735,6 @@ class Tropo extends BaseClass {
         }
       } else {
         throw new Exception("Required property: 'to' must be a string or a string of array.");
-      }
-      if (!(is_string($transfer->getName()) && ($transfer->getName() != ''))) {
-        throw new Exception("Required property: 'to' must be a string.");
       }
 
     } elseif (is_array($transfer) || (is_string($transfer) && ($transfer !== ''))) {//$transfer is a non-empty string or a non-empty string of array
@@ -844,67 +755,61 @@ class Tropo extends BaseClass {
         $to = $transfer;
       }
 
-      if (isset($params) && is_array($params)) {
+      if (isset($params)) {
 
-        if (array_key_exists('name', $params)) {
-          if (is_string($params["name"]) && ($params["name"] !=='')) {
-            $name = $params["name"];
-          } else {
-            throw new Exception("'name' must be is a string.");
-          }
-        } else {
-          throw new Exception("Missing required property: 'name'");
-        }
+        if (is_array($params)) {
+          $choices = null;
+          if (array_key_exists('choices', $params)) {
 
-        $choices = null;
-        if (array_key_exists('choices', $params)) {
-
-          if ($params["choices"] instanceof Choices) {
-            $choices = $params["choices"];
-          } elseif (is_string($params["choices"]) && ($params["choices"] !== '')) {
-            $choices = new Choices(null, null, $params["choices"]);
-          } else {
-            $choices = null;
-          }
-        }
-
-        if (array_key_exists('terminator', $params)) {
-          if (is_string($params["terminator"]) && ($params["terminator"] !== '')) {
-            $choices = new Choices(null, null, $params["terminator"]);
-          }
-        }
-        
-        $p = array('answerOnMedia', 'ringRepeat', 'timeout', 'from', 'allowSignals', 'headers', 'machineDetection', 'voice', 'required', 'interdigitTimeout', 'playTones', 'callbackUrl', 'promptLogSecurity', 'label');
-        foreach ($p as $option) {
-          $$option = null;
-          if (array_key_exists($option, $params)) {
-            $$option = $params[$option];
-          }
-        }
-        $on = null;
-        if (array_key_exists('on', $params)) {
-          if ($params['on'] instanceof On) {
-            if (is_string($params['on']->getEvent()) && ((strtolower($params['on']->getEvent()) == 'ring') || (strtolower($params['on']->getEvent()) == 'connect'))) {
-              $on = $params['on'];
+            if ($params["choices"] instanceof Choices) {
+              $choices = $params["choices"];
+            } elseif (is_string($params["choices"]) && ($params["choices"] !== '')) {
+              $choices = new Choices(null, null, $params["choices"]);
             } else {
-              throw new TropoException("The only event allowed on transfer is 'ring' or 'connect'");
+              $choices = null;
             }
-          } elseif (is_array($params['on'])) {
-            foreach ($params['on'] as $value) {
-              if ($value instanceof On) {
-                if (is_string($value->getEvent()) && ((strtolower($value->getEvent()) == 'ring') || (strtolower($value->getEvent()) == 'connect'))) {
-                  $on[] = $value;
-                } else {
-                  throw new TropoException("The only event allowed on transfer is 'ring' or 'connect'");
+          }
+
+          if (array_key_exists('terminator', $params)) {
+            if (is_string($params["terminator"]) && ($params["terminator"] !== '')) {
+              $choices = new Choices(null, null, $params["terminator"]);
+            }
+          }
+          
+          $p = array('answerOnMedia', 'ringRepeat', 'timeout', 'from', 'allowSignals', 'headers', 'machineDetection', 'voice', 'name', 'required', 'interdigitTimeout', 'playTones', 'callbackUrl', 'promptLogSecurity', 'label');
+          foreach ($p as $option) {
+            $$option = null;
+            if (array_key_exists($option, $params)) {
+              $$option = $params[$option];
+            }
+          }
+          $on = null;
+          if (array_key_exists('on', $params)) {
+            if ($params['on'] instanceof On) {
+              if (is_string($params['on']->getEvent()) && ((strtolower($params['on']->getEvent()) == 'ring') || (strtolower($params['on']->getEvent()) == 'connect'))) {
+                $on = $params['on'];
+              } else {
+                throw new TropoException("The only event allowed on transfer is 'ring' or 'connect'");
+              }
+            } elseif (is_array($params['on'])) {
+              foreach ($params['on'] as $value) {
+                if ($value instanceof On) {
+                  if (is_string($value->getEvent()) && ((strtolower($value->getEvent()) == 'ring') || (strtolower($value->getEvent()) == 'connect'))) {
+                    $on[] = $value;
+                  } else {
+                    throw new TropoException("The only event allowed on transfer is 'ring' or 'connect'");
+                  }
                 }
               }
             }
           }
+          $transfer = new Transfer($to, $answerOnMedia, $choices, $from, $ringRepeat, $timeout, $on, $allowSignals, $headers, $machineDetection, $voice, $name, $required, $interdigitTimeout, $playTones, $callbackUrl, $promptLogSecurity, $label);
+        } else {
+          throw new Exception("When Argument 1 passed to Tropo::transfer() is a string or a string of array, argument 2 passed to Tropo::transfer() must be of the type array.");
         }
-        $transfer = new Transfer($to, $answerOnMedia, $choices, $from, $ringRepeat, $timeout, $on, $allowSignals, $headers, $machineDetection, $voice, $name, $required, $interdigitTimeout, $playTones, $callbackUrl, $promptLogSecurity, $label);
       } else {
 
-        throw new Exception("When Argument 1 passed to Tropo::transfer() is a string or a string of array, argument 2 passed to Tropo::transfer() must be of the type array.");
+        $transfer = new Transfer($to);
 
       }
 
@@ -1455,12 +1360,9 @@ class Call extends BaseClass {
   * @param StartRecording $recording
   * @param string|array $allowSignals
   */
-  public function __construct($to, $from=NULL, $network=NULL, $channel=NULL, $answerOnMedia=NULL, $timeout=NULL, Array $headers=NULL, StartRecording $recording=NULL, $allowSignals=NULL, $machineDetection=NULL, $voice=NULL, $name, $required=NULL, $callbackUrl=NULL, $promptLogSecurity=NULL, $label=NULL) {
+  public function __construct($to, $from=NULL, $network=NULL, $channel=NULL, $answerOnMedia=NULL, $timeout=NULL, Array $headers=NULL, StartRecording $recording=NULL, $allowSignals=NULL, $machineDetection=NULL, $voice=NULL, $name=NULL, $required=NULL, $callbackUrl=NULL, $promptLogSecurity=NULL, $label=NULL) {
     if(!isset($to)) {
       throw new Exception("Missing required property: 'to'");
-    }
-    if(!isset($name)) {
-      throw new Exception("Missing required property: 'name'");
     }
     if (is_string($to) && ($to != '')) {
     } elseif (is_array($to)) {
@@ -1471,9 +1373,6 @@ class Call extends BaseClass {
       }
     } else {
       throw new Exception("Required property: 'to' must be a string or a string of array.");
-    }
-    if (!(is_string($name) && ($name != ''))) {
-      throw new Exception("Required property: 'name' must be a string.");
     }
     $this->_to = $to;
     $this->_from = $from;
@@ -1516,7 +1415,7 @@ class Call extends BaseClass {
       }
     }
     if(isset($this->_voice)) { $this->voice = $this->_voice; }
-    $this->name = $this->_name;
+    if(isset($this->_name)) { $this->name = $this->_name; }
     if(isset($this->_required)) { $this->required = $this->_required; }
     if(isset($this->_callbackUrl)) { $this->callbackUrl = $this->_callbackUrl; }
     if(isset($this->_promptLogSecurity)) { $this->promptLogSecurity = $this->_promptLogSecurity; }
@@ -1616,15 +1515,9 @@ class Conference extends BaseClass {
   * @param string|array $allowSignals
   * @param int $interdigitTimeout
   */
-  public function __construct($name, $id, $mute=NULL, On $on=NULL, $playTones=NULL, $required=NULL, $terminator=NULL, $allowSignals=NULL, $interdigitTimeout=NULL, $joinPrompt=NULL, $leavePrompt=NULL, $voice=NULL, $promptLogSecurity=NULL) {
-    if(!isset($name)) {
-      throw new Exception("Missing required property: 'name'");
-    }
+  public function __construct($name=NULL, $id, $mute=NULL, On $on=NULL, $playTones=NULL, $required=NULL, $terminator=NULL, $allowSignals=NULL, $interdigitTimeout=NULL, $joinPrompt=NULL, $leavePrompt=NULL, $voice=NULL, $promptLogSecurity=NULL) {
     if(!isset($id)) {
       throw new Exception("Missing required property: 'id'");
-    }
-    if (!(is_string($name) && ($name != ''))) {
-      throw new Exception("Required property: 'name' must be a string.");
     }
     if (!(is_string($id) && ($id != ''))) {
       throw new Exception("Required property: 'id' must be a string.");
@@ -1647,7 +1540,7 @@ class Conference extends BaseClass {
   *
   */
   public function __toString() {
-    $this->name = $this->_name;
+    if(isset($this->_name)) { $this->name = $this->_name; }
     $this->id = $this->_id;
     if(isset($this->_mute)) { $this->mute = $this->_mute; }
     if(isset($this->_playTones)) { $this->playTones = $this->_playTones; }
@@ -1733,15 +1626,12 @@ class Message extends BaseClass {
   * @param array $headers
   */
   //                      Say $say, $to, $channel=null, $network=null, $from=null, $voice=null, $timeout=null, $answerOnMedia=null, Array $headers=null
-  public function __construct($say, $to, $channel=null, $network=null, $from=null, $voice=null, $timeout=null, $answerOnMedia=null, Array $headers=null, $name, $required=null, $promptLogSecurity=null) {
+  public function __construct($say, $to, $channel=null, $network=null, $from=null, $voice=null, $timeout=null, $answerOnMedia=null, Array $headers=null, $name=null, $required=null, $promptLogSecurity=null) {
     if(!isset($say)) {
       throw new Exception("Missing required property: 'say'");
     }
     if(!isset($to)) {
       throw new Exception("Missing required property: 'to'");
-    }
-    if(!isset($name)) {
-      throw new Exception("Missing required property: 'name'");
     }
     if ($say instanceof Say) {
       $this->_say = sprintf('%s', $say);
@@ -1771,11 +1661,7 @@ class Message extends BaseClass {
     } else {
       throw new Exception("Required property: 'to' must be a string or a string of array.");
     }
-    if (is_string($name) && ($name != '')) {
-      $this->_name = $name;
-    } else {
-      throw new Exception("Required property: 'name' must be a string.");
-    }
+    $this->_name = $name;
     $this->_channel = $channel;
     $this->_network = $network;
     $this->_from = $from;
@@ -1794,7 +1680,7 @@ class Message extends BaseClass {
   public function __toString() {
     if(isset($this->_say)) { $this->say = json_decode($this->_say); }
     $this->to = $this->_to;
-    $this->name = $this->_name;
+    if(isset($this->_name)) { $this->name = $this->_name; }
     if(isset($this->_channel)) { $this->channel = $this->_channel; }
     if(isset($this->_network)) { $this->network = $this->_network; }
     if(isset($this->_from)) { $this->from = $this->_from; }
@@ -1941,12 +1827,9 @@ class Record extends BaseClass {
   * @param int $minConfidence
   * @param int $interdigitTimeout
   */
-  public function __construct($attempts=NULL, $allowSignals=NULL, $bargein=NULL, $beep=NULL, Choices $choices=NULL, $format=NULL, $maxSilence=NULL, $maxTime=NULL, $method=NULL, $password=NULL, $required=NULL, $say=NULL, $timeout=NULL, Transcription $transcription=NULL, $username=NULL, $url, $voice=NULL, $minConfidence=NULL, $interdigitTimeout=NULL, $asyncUpload=NULL, $name, $promptLogSecurity=NULL, $sensitivity=NULL) {
+  public function __construct($attempts=NULL, $allowSignals=NULL, $bargein=NULL, $beep=NULL, Choices $choices=NULL, $format=NULL, $maxSilence=NULL, $maxTime=NULL, $method=NULL, $password=NULL, $required=NULL, $say=NULL, $timeout=NULL, Transcription $transcription=NULL, $username=NULL, $url, $voice=NULL, $minConfidence=NULL, $interdigitTimeout=NULL, $asyncUpload=NULL, $name=NULL, $promptLogSecurity=NULL, $sensitivity=NULL) {
     if(!isset($url)) {
       throw new Exception("Missing required property: 'url'");
-    }
-    if(!isset($name)) {
-      throw new Exception("Missing required property: 'name'");
     }
     if (is_string($url) && ($url != '')) {
       $this->_url = sprintf('%s', new Url($url, $username, $password, $method));
@@ -1965,9 +1848,6 @@ class Record extends BaseClass {
       $this->_url = json_encode($this->_url);
     } else {
       throw new Exception("Property: 'url' must be a valid string, an instance of Url or an array of Urls.");
-    }
-    if (!(is_string($name) && ($name != ''))) {
-      throw new Exception("Required property: 'name' must be a string.");
     }
     $this->_attempts = $attempts;
     $this->_allowSignals = $allowSignals;
@@ -2066,21 +1946,15 @@ class Redirect extends BaseClass {
   * @param Endpoint $to
   * @param Endpoint $from
   */
-  public function __construct($to, $from=NULL, $name, $required) {
+  public function __construct($to, $from=NULL, $name=NULL, $required) {
     if(!isset($to)) {
       throw new Exception("Missing required property: 'to'");
-    }
-    if(!isset($name)) {
-      throw new Exception("Missing required property: 'name'");
     }
     if (!(is_string($to) && ($to != ''))) {
       throw new Exception("Required property: 'to' must be a string.");
     }
-    if (!(is_string($name) && ($name != ''))) {
-      throw new Exception("Required property: 'name' must be a string.");
-    }
     $this->_to = sprintf('%s', $to);
-    $this->_name = sprintf('%s', $name);
+    $this->_name = $name;
     $this->_required = $required;
   }
 
@@ -2090,7 +1964,7 @@ class Redirect extends BaseClass {
   */
   public function __toString() {
     $this->to = $this->_to;
-    $this->name = $this->_name;
+    if(isset($this->_name)) { $this->name = $this->_name; }
     if(isset($this->_required)) { $this->required = $this->_required; }
     return json_encode($this);
   }
@@ -2767,12 +2641,9 @@ class Transfer extends BaseClass {
   * @param string|array $allowSignals
   * @param array $headers
   */
-  public function __construct($to, $answerOnMedia=NULL, Choices $choices=NULL, $from=NULL, $ringRepeat=NULL, $timeout=NULL, $on=NULL, $allowSignals=NULL, Array $headers=NULL, $machineDetection=NULL, $voice=NULL, $name, $required=NULL, $interdigitTimeout=NULL, $playTones=NULL, $callbackUrl=NULL, $promptLogSecurity=NULL, $label=NULL) {
+  public function __construct($to, $answerOnMedia=NULL, Choices $choices=NULL, $from=NULL, $ringRepeat=NULL, $timeout=NULL, $on=NULL, $allowSignals=NULL, Array $headers=NULL, $machineDetection=NULL, $voice=NULL, $name=NULL, $required=NULL, $interdigitTimeout=NULL, $playTones=NULL, $callbackUrl=NULL, $promptLogSecurity=NULL, $label=NULL) {
     if(!isset($to)) {
       throw new Exception("Missing required property: 'to'");
-    }
-    if(!isset($name)) {
-      throw new Exception("Missing required property: 'name'");
     }
     if (is_string($to) && ($to != '')) {
     } elseif (is_array($to)) {
@@ -2783,9 +2654,6 @@ class Transfer extends BaseClass {
       }
     } else {
       throw new Exception("Required property: 'to' must be a string or a string of array.");
-    }
-    if (!(is_string($name) && ($name != ''))) {
-      throw new Exception("Required property: 'name' must be a string.");
     }
     $this->_to = $to;
     $this->_answerOnMedia = $answerOnMedia;
@@ -2850,7 +2718,7 @@ class Transfer extends BaseClass {
       }
     }
     if(isset($this->_voice)) { $this->voice = $this->_voice; }
-    $this->name = $this->_name;
+    if(isset($this->_name)) { $this->name = $this->_name; }
     if(isset($this->_required)) { $this->required = $this->_required; }
     if(isset($this->_interdigitTimeout)) { $this->interdigitTimeout = $this->_interdigitTimeout; }
     if(isset($this->_playTones)) { $this->playTones = $this->_playTones; }
