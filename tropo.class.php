@@ -632,7 +632,7 @@ class Tropo extends BaseClass {
       if (isset($params)) {
 
         if (is_array($params)) {
-          $p = array('as', 'event','voice', 'allowSignals', 'name', 'required', 'promptLogSecurity');
+          $p = array('as', 'event','voice', 'allowSignals', 'name', 'required', 'promptLogSecurity', 'media');
           foreach ($p as $option) {
             $$option = null;
             if (array_key_exists($option, $params)) {
@@ -641,7 +641,7 @@ class Tropo extends BaseClass {
           }
           $voice = isset($voice) ? $voice : $this->_voice;
           $event = null;
-          $say = new Say($value, $as, $event, $voice, $allowSignals, $name, $required, $promptLogSecurity);
+          $say = new Say($value, $as, $event, $voice, $allowSignals, $name, $required, $promptLogSecurity, $media);
         } else {
           throw new Exception("When Argument 1 passed to Tropo::say() is a string, argument 2 passed to Tropo::say() must be of the type array.");
         }
@@ -2233,6 +2233,7 @@ class Say extends BaseClass {
   private $_name;
   private $_required;
   private $_promptLogSecurity;
+  private $_media;
 
   public function getValue() {
     return $this->_value;
@@ -2255,7 +2256,7 @@ class Say extends BaseClass {
   * @param string $voice
   * @param string|array $allowSignals
   */
-  public function __construct($value, $as=NULL, $event=NULL, $voice=NULL, $allowSignals=NULL, $name=NULL, $required=NULL, $promptLogSecurity=NULL) {
+  public function __construct($value, $as=NULL, $event=NULL, $voice=NULL, $allowSignals=NULL, $name=NULL, $required=NULL, $promptLogSecurity=NULL, $media=NULL) {
     if(!(is_string($value) && ($value != ''))) {
       throw new Exception("Missing required property: 'value'");
     }
@@ -2267,6 +2268,7 @@ class Say extends BaseClass {
     $this->_name = $name;
     $this->_required = $required;
     $this->_promptLogSecurity = $promptLogSecurity;
+    $this->_media = $media;
   }
 
   /**
@@ -2282,6 +2284,7 @@ class Say extends BaseClass {
     if(isset($this->_name)) { $this->name = $this->_name; }
     if(isset($this->_required)) { $this->required = $this->_required; }
     if(isset($this->_promptLogSecurity)) { $this->promptLogSecurity = $this->_promptLogSecurity; }
+    if(isset($this->_media)) { $this->media = $this->_media; }
     return json_encode($this);
   }
 }
@@ -2305,6 +2308,8 @@ class Session {
   private $_headers;
   private $_parameters;
   private $_userType;
+  private $_subject;
+  private $_initialMedia;
 
   /**
   * Class constructor
@@ -2330,6 +2335,14 @@ class Session {
     $this->_timestamp = $session->session->timestamp;
     $this->_initialText = $session->session->initialText;
     $this->_userType = $session->session->userType;
+    $this->_subject = isset($session->session->subject) ? $session->session->subject : null;
+    $this->_initialMedia = isset($session->session->initialMedia) ? $session->session->initialMedia : null;
+    if (is_object($this->_initialMedia)) {
+      $this->_text = isset($session->session->initialMedia->text) ? $session->session->initialMedia->text : null;
+      $this->_media = isset($session->session->initialMedia->media) ? $session->session->initialMedia->media : null;
+      $this->_status = isset($session->session->initialMedia->status) ? $session->session->initialMedia->status : null;
+      $this->_disposition = isset($session->session->initialMedia->disposition) ? $session->session->initialMedia->disposition : null;
+    }
     $this->_to = isset($session->session->to)
     ? array(
       "id" => $session->session->to->id,
@@ -2409,6 +2422,30 @@ class Session {
 
           public function getUserType() {
             return $this->_userType;
+          }
+
+          public function getSubject() {
+            return $this->_subject;
+          }
+
+          public function getInitialMedia() {
+            return $this->_initialMedia;
+          }
+
+          public function getTextFromMedia($media) {
+            return isset($media->text) ? $media->text : null;
+          }
+
+          public function getMediaFromMedia($media) {
+            return isset($media->media) ? $media->media : null;
+          }
+
+          public function getStatusFromMedia($media) {
+            return isset($media->status) ? $media->status : null;
+          }
+
+          public function getDispositionFromMedia($media) {
+            return isset($media->disposition) ? $media->disposition : null;
           }
 
           /**
@@ -2958,6 +2995,7 @@ class Network {
   public static $yahoo = "YAHOO";
   public static $twitter = "TWITTER";
   public static $sip = "SIP";
+  public static $mms = "MMS";
 }
 
 /**

@@ -14,6 +14,22 @@ class MessageTest extends PHPUnit_Framework_TestCase
       $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":{"value":"This is an announcement."},"to":"sip:pengxli@192.168.26.1:5678"}}]}');
     }
 
+    public function testMessageWithMMS() {
+      $tropo = new Tropo();
+      $say = new Say("This is the subject",null, null, null, null, null,null,null,"http://user:pass@server.com/1.jpg");
+      $message = new Message($say,'sip:pengxli@192.168.26.1:5678',null, Network::$mms);
+      $tropo->message($message);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":{"value":"This is the subject","media":"http://user:pass@server.com/1.jpg"},"to":"sip:pengxli@192.168.26.1:5678","network":"MMS"}}]}');
+    }
+
+    public function testMessageWithMMS1() {
+      $tropo = new Tropo();
+      $say = new Say("This is the subject",null, null, null, null, null,null,null,array("http://server.com/1.jpg", "this is a inline text content", "http://filehosting.tropo.com/account/1/2.text"));
+      $message = new Message($say,'sip:pengxli@192.168.26.1:5678',null, Network::$mms);
+      $tropo->message($message);
+      $this->assertEquals(sprintf($tropo), '{"tropo":[{"message":{"say":{"value":"This is the subject","media":["http://server.com/1.jpg","this is a inline text content","http://filehosting.tropo.com/account/1/2.text"]},"to":"sip:pengxli@192.168.26.1:5678","network":"MMS"}}]}');
+    }
+
     public function testMessageWithExtraSayOptiions() {
       $tropo = new Tropo();
       $say = "Remember, you have a meeting at 2 PM.";
